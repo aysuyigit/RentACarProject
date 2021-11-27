@@ -1,0 +1,18 @@
+package com.etiya.rentACar.business.abstracts;
+
+import java.util.List;
+
+import com.etiya.rentACar.business.dtos.IndividualCustomerSearchListDto;
+import com.etiya.rentACar.business.request.CreateIndividualCustomerRequest;
+import com.etiya.rentACar.business.request.DeleteIndividualCustomerRequest;
+import com.etiya.rentACar.business.request.UpdateIndividualCustomerRequest;
+import com.etiya.rentACar.core.utilities.results.DataResult;
+import com.etiya.rentACar.core.utilities.results.Result;
+
+public interface IndividualCustomerService {
+	
+	DataResult<List<IndividualCustomerSearchListDto>> getAll();
+	Result save(CreateIndividualCustomerRequest createIndividualCustomerRequest);
+	Result delete(DeleteIndividualCustomerRequest deleteIndividualCustomerRequest);
+	Result update(UpdateIndividualCustomerRequest updateIndividualCustomerRequest);
+}
