@@ -13,4 +13,6 @@ public class UserSearchListDto {
 
 	private String eMail;
 	
+	private String password;
+	
 }

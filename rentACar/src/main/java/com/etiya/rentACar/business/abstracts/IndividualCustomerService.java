@@ -8,6 +8,7 @@ import com.etiya.rentACar.business.request.DeleteIndividualCustomerRequest;
 import com.etiya.rentACar.business.request.UpdateIndividualCustomerRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
+import com.etiya.rentACar.entities.IndividualCustomer;
 
 public interface IndividualCustomerService {
 	
@@ -15,4 +16,5 @@ public interface IndividualCustomerService {
 	Result save(CreateIndividualCustomerRequest createIndividualCustomerRequest);
 	Result delete(DeleteIndividualCustomerRequest deleteIndividualCustomerRequest);
 	Result update(UpdateIndividualCustomerRequest updateIndividualCustomerRequest);
+	IndividualCustomer getCustomerByCustomerId(int customerId);
 }

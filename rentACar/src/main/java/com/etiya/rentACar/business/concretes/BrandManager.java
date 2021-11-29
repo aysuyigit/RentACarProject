@@ -11,6 +11,7 @@ import com.etiya.rentACar.business.dtos.BrandSearchListDto;
 import com.etiya.rentACar.business.request.CreateBrandRequest;
 import com.etiya.rentACar.business.request.DeleteBrandRequest;
 import com.etiya.rentACar.business.request.UpdateBrandRequest;
+import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
@@ -42,15 +43,16 @@ public class BrandManager implements BrandService{
 
 	@Override
 	public Result save(CreateBrandRequest createBrandRequest) {
-		Brand result = this.brandDao.getByBrandName(createBrandRequest.getBrandName());
-		if(result ==null) {
-			Brand brand = modelMapperService.forRequest().map(createBrandRequest, Brand.class);
-			this.brandDao.save(brand);	
-			return new SuccessResult("Brand added.");
+		Result result = BusinessRules.run(checkExistingBrand(createBrandRequest.getBrandName()));
+		
+		if(result != null) {
+			return result;
 		}
-		return new ErrorResult("This brand already exists");
+		
+		Brand brand = modelMapperService.forRequest().map(createBrandRequest, Brand.class);
+		this.brandDao.save(brand);
+		return new SuccessResult("Brand added.");
 	}
-
 
 	@Override
 	public Result delete(DeleteBrandRequest deleteBrandRequest) {
@@ -64,6 +66,17 @@ public class BrandManager implements BrandService{
 		Brand brand = modelMapperService.forRequest().map(updateBrandRequest, Brand.class);
 		this.brandDao.save(brand);
 		return new SuccessResult("Brand updated.");
+	}
+	
+	private Result checkExistingBrand(String brandName1) {
+		String lowerCaseBrandName = brandName1.toLowerCase();
+		for (Brand brand : brandDao.findAll()) {
+			String lowerCaseExistingBrandName = brand.getBrandName().toLowerCase();
+			if(lowerCaseBrandName.equals(lowerCaseExistingBrandName)) {
+				return new ErrorResult("Marka adı tekrar edemez.");
+			}
+		}
+		return new SuccessResult();
 	}
 
 }

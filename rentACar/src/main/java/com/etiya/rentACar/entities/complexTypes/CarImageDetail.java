@@ -1,6 +1,5 @@
 package com.etiya.rentACar.entities.complexTypes;
 
-import java.io.File;
 import java.util.List;
 
 import lombok.AllArgsConstructor;

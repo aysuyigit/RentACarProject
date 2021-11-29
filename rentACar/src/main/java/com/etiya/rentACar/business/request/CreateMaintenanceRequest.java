@@ -1,30 +1,27 @@
 package com.etiya.rentACar.business.request;
 
+import java.sql.Date;
+
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateIndividualCustomerRequest {
+public class CreateMaintenanceRequest {
+
+	@NotNull
+	@Min(1)
+	private int carId;
 	
 	@NotNull
-	@Size(min=2,max=16)
-	private String firstName;
+	private Date startDate;
 	
-	@NotNull
-	@Size(min=2,max=16)
-	private String lastName;
-	
-	@NotNull
-	private String birthday;
-	
-	@NotNull
 	@JsonIgnore
-	private int findeksPointPerson;
+	private Date endDate;
 }

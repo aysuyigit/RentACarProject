@@ -1,6 +1,5 @@
 package com.etiya.rentACar.business.request;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -11,12 +10,17 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginRequest {
+public class RegisterIndividualRequest {
+	 @NotBlank
+	 @NotNull
+	 private String email;
+	 
+	 @NotBlank
+	 @NotNull
+	 private String password;
+	 
+	 @NotBlank
+	 @NotNull
+	 private String passwordConfirm;
 
-	@NotNull
-	@Email
-	private String email;
-	
-	@NotNull
-	private String password;
 }

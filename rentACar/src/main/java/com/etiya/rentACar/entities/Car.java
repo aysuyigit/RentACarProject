@@ -33,6 +33,8 @@ public class Car {
 	private double dailyPrice;
 	@Column(name="description")
 	private String description;
+	@Column(name="findeks_point")
+	private int findeksPointCar;
 	
 	@ManyToOne
 	@JoinColumn(name="brand_id")
@@ -47,8 +49,7 @@ public class Car {
 	
 	@OneToMany(mappedBy="car")
 	private List<CarImage> carImages;
-	
-	@Column(name="findex_point")
-	private int findexPoint;
 
+	@OneToMany(mappedBy="car")
+	private List<Maintenance> maintenances;
 }

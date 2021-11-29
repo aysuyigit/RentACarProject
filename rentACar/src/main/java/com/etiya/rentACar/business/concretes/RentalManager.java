@@ -69,7 +69,7 @@ public class RentalManager implements RentalService {
 		return new SuccessResult("Rental updated.");
 	}
 	
-	private Result checkCarIsReturned(int carId) {
+	public Result checkCarIsReturned(int carId) {
 		List<Rental> result = this.rentalDao.getByCar_CarId(carId);
 		if(result != null) {
 			for (Rental rentals : this.rentalDao.getByCar_CarId(carId)) {

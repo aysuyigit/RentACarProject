@@ -14,4 +14,6 @@ public interface UserService {
 	Result save(CreateUserRequest createUserRequest);
 	Result delete(DeleteUserRequest deleteUserRequest);
 	Result update(UpdateUserRequest updateUserRequest);
+	Result existsByEmail(String email);
+    DataResult<UserSearchListDto> getByEmail(String email);
 }

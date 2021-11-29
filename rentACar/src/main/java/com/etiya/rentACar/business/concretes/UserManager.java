@@ -13,6 +13,7 @@ import com.etiya.rentACar.business.request.DeleteUserRequest;
 import com.etiya.rentACar.business.request.UpdateUserRequest;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.DataResult;
+import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
@@ -60,6 +61,22 @@ public class UserManager implements UserService {
 		User user= modelMapperService.forRequest().map(updateUserRequest, User.class);
 		this.userDao.save(user);
 		return new SuccessResult("User updated.");
+	}
+
+	@Override
+	public Result existsByEmail(String email) {
+		if (this.userDao.existsByeMail(email)) {
+			return new ErrorResult();
+		}
+		return new SuccessResult();
+	}
+	
+
+	@Override
+	public DataResult<UserSearchListDto> getByEmail(String email) {
+		boolean user = this.userDao.existsByeMail(email);
+		UserSearchListDto userSearchListDto = modelMapperService.forDto().map(user, UserSearchListDto.class);
+		return new SuccessDataResult<UserSearchListDto>(userSearchListDto);
 	}
 
 }

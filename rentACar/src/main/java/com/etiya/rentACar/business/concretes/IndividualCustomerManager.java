@@ -11,32 +11,24 @@ import com.etiya.rentACar.business.dtos.IndividualCustomerSearchListDto;
 import com.etiya.rentACar.business.request.CreateIndividualCustomerRequest;
 import com.etiya.rentACar.business.request.DeleteIndividualCustomerRequest;
 import com.etiya.rentACar.business.request.UpdateIndividualCustomerRequest;
-import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.DataResult;
-import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
 import com.etiya.rentACar.dataAccess.abstracts.IndividualCustomerDao;
-import com.etiya.rentACar.dataAccess.abstracts.UserDao;
 import com.etiya.rentACar.entities.IndividualCustomer;
-import com.etiya.rentACar.entities.User;
 
 @Service
 public class IndividualCustomerManager implements IndividualCustomerService{
 	
 	private IndividualCustomerDao individualCustomerDao;
 	private ModelMapperService modelMapperService;
-	private UserDao userDao;
-
 	@Autowired
-	public IndividualCustomerManager(IndividualCustomerDao individualCustomerDao,
-			ModelMapperService modelMapperService, UserDao userDao) {
+	public IndividualCustomerManager(IndividualCustomerDao individualCustomerDao, ModelMapperService modelMapperService) {
 		super();
 		this.individualCustomerDao = individualCustomerDao;
 		this.modelMapperService = modelMapperService;
-		this.userDao = userDao;
 	}
 
 	@Override
@@ -49,13 +41,11 @@ public class IndividualCustomerManager implements IndividualCustomerService{
 
 	@Override
 	public Result save(CreateIndividualCustomerRequest createIndividualCustomerRequest) {
-		Result result = BusinessRules.run(checkUserIdDuplication(createIndividualCustomerRequest.getUserId()),
-				checkIfUserExist(createIndividualCustomerRequest.getUserId()));
-		
-		if(result != null) {
-			return result;
-		}
-		
+//		int max=1900;
+//		int min=0;
+//		int range = max - min + 1;
+//		int randomNumberInt = (int)(Math.random() * range) + min;
+
 		IndividualCustomer individualCustomer = modelMapperService.forRequest().map(createIndividualCustomerRequest, IndividualCustomer.class);
 		this.individualCustomerDao.save(individualCustomer);
 		return new SuccessResult("Individual customer added.");
@@ -75,20 +65,26 @@ public class IndividualCustomerManager implements IndividualCustomerService{
 		return new SuccessResult("Individual customer updated.");
 	}
 	
-	private Result checkUserIdDuplication(int userId) {
-		IndividualCustomer individualCustomer = this.individualCustomerDao.getByUser_UserId(userId);
-		if(individualCustomer != null) {
-			return new ErrorResult("Kullanıcı numarası tekrarlayamaz.");
-		}
-		return new SuccessResult();
-	}
-	
-	private Result checkIfUserExist(int userId) {
-		for (User users : userDao.findAll()) {
-			if(users.getUserId() == userId) {
-				return new SuccessResult();
-			}
-		}
-		return new ErrorResult("Kullanıcı bulunamadı.");
+//	private Result checkUserIdDuplication(int userId) {
+//		IndividualCustomer individualCustomer = this.individualCustomerDao.getByUser_UserId(userId);
+//		if(individualCustomer != null) {
+//			return new ErrorResult("Kullanıcı numarası tekrarlayamaz.");
+//		}
+//		return new SuccessResult();
+//	}
+//	
+//	private Result checkIfUserExist(int userId) {
+//		for (User users : userDao.findAll()) {
+//			if(users.getUserId() == userId) {
+//				return new SuccessResult();
+//			}
+//		}
+//		return new ErrorResult("Kullanıcı bulunamadı.");
+//	}
+
+	@Override
+	public IndividualCustomer getCustomerByCustomerId(int customerId) {
+		IndividualCustomer individualCustomer = individualCustomerDao.getById(customerId);
+		return individualCustomer;
 	}
 }

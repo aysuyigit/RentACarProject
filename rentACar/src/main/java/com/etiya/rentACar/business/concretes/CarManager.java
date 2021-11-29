@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.etiya.rentACar.business.abstracts.CarImageService;
 import com.etiya.rentACar.business.abstracts.CarService;
+import com.etiya.rentACar.business.abstracts.MaintenanceService;
 import com.etiya.rentACar.business.dtos.CarDetailDto;
 import com.etiya.rentACar.business.dtos.CarSearchListDto;
 import com.etiya.rentACar.business.request.CreateCarRequest;
@@ -30,20 +32,28 @@ public class CarManager implements CarService{
 	private CarDao carDao;
 	private ModelMapperService modelMapperService;
 	private CarImageService carImageService;
+	private MaintenanceService maintenanceService;
 	
 	@Autowired
-	public CarManager(CarDao carDao, ModelMapperService modelMapperService, CarImageService carImageService) {
+	public CarManager(CarDao carDao, ModelMapperService modelMapperService, CarImageService carImageService, @Lazy MaintenanceService maintenanceService) {
 		super();
 		this.carDao = carDao;
 		this.modelMapperService = modelMapperService;
 		this.carImageService = carImageService;
+		this.maintenanceService = maintenanceService;
 	}
 
 	@Override
 	public List<CarSearchListDto> getCars() {
 		
-		List<Car> result = this.carDao.findAll();
-		List<CarSearchListDto> response = result.stream().map(car -> modelMapperService.forDto()
+		List<Car> list = this.carDao.findAll();
+		for (Car car2 : list) {
+			int carId = car2.getCarId();
+			if(!maintenanceService.checkIfCarIsOnMaintenance(carId).isSuccess()) {
+				list.remove(car2);
+			}
+		}
+		List<CarSearchListDto> response = list.stream().map(car -> modelMapperService.forDto()
 				.map(car, CarSearchListDto.class)).collect(Collectors.toList());
 		
 		return response;
@@ -53,8 +63,6 @@ public class CarManager implements CarService{
 	public Result save(CreateCarRequest createCarRequest) {
 		Car car = modelMapperService.forRequest().map(createCarRequest, Car.class);
 		this.carDao.save(car);
-		
-		car.setFindexPoint(createCarRequest.getFindexPoint());
 		return new SuccessResult("Car added.");
 	}
 
@@ -68,7 +76,6 @@ public class CarManager implements CarService{
 	@Override
 	public Result update(UpdateCarRequest updateCarRequest) {
 		Car car = modelMapperService.forRequest().map(updateCarRequest, Car.class);
-		car.setFindexPoint(updateCarRequest.getFindexPoint());
 		this.carDao.save(car);
 		return new SuccessResult("Car updated.");
 	}
@@ -76,11 +83,17 @@ public class CarManager implements CarService{
 	@Override
 	public DataResult<List<CarDetail>> getCarWithColorAndBrandDetails() {
 		List<CarDetail> result = this.carDao.getCarWithColorAndBrandDetails();
+		for (CarDetail car2 : result) {
+			int carId = car2.getCarId();
+			if(!maintenanceService.checkIfCarIsOnMaintenance(carId).isSuccess()) {
+				result.remove(car2);
+			}
+		}
 		return new SuccessDataResult<List<CarDetail>>(result);
 	}
 
 	@Override
-	public DataResult<CarSearchListDto> getById(int id) {
+	public DataResult<CarSearchListDto> getCarDetailsById(int id) {
 		Car car = this.carDao.findById(id).get();
 		if(car != null) {
 			CarSearchListDto carSearchListDto = modelMapperService.forDto().map(car, CarSearchListDto.class);
@@ -92,6 +105,16 @@ public class CarManager implements CarService{
 	@Override
 	public DataResult<List<CarSearchListDto>> getByBrandId(int brandId) {
 		List<Car> cars = this.carDao.getByBrand_BrandId(brandId); 
+		int index = 0;
+		int i = 0;
+		for (Car car2 : cars) {
+			int carId = car2.getCarId();
+			if(!maintenanceService.checkIfCarIsOnMaintenance(carId).isSuccess()) {
+				index = i;
+			}
+			i++;
+		}
+		cars.remove(index);
 		List<CarSearchListDto> response = cars.stream().map(car -> modelMapperService.forDto()
 				.map(car, CarSearchListDto.class)).collect(Collectors.toList());
 		return new SuccessDataResult<List<CarSearchListDto>>(response);
@@ -100,6 +123,12 @@ public class CarManager implements CarService{
 	@Override
 	public DataResult<List<CarSearchListDto>> getByColorId(int colorId) {
 		List<Car> cars = this.carDao.getByColor_ColorId(colorId);
+		for (Car car2 : cars) {
+			int carId = car2.getCarId();
+			if(!maintenanceService.checkIfCarIsOnMaintenance(carId).isSuccess()) {
+				cars.remove(car2);
+			}
+		}
 		List<CarSearchListDto> response = cars.stream().map(car -> modelMapperService.forDto()
 				.map(car, CarSearchListDto.class)).collect(Collectors.toList());
 		return new SuccessDataResult<List<CarSearchListDto>>(response);
@@ -123,5 +152,11 @@ public class CarManager implements CarService{
 			carDetailDto.setImagePaths(list);
 			return new SuccessDataResult<CarDetailDto>(carDetailDto);
 		}
+	}
+
+	@Override
+	public Car getCarAsElementByCarId(int carId) {
+		Car car = carDao.getById(carId);
+		return car;
 	}
 }

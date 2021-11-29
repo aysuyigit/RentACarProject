@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -20,14 +21,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="individualcustomers")
-public class IndividualCustomer {
+@Table(name="individual_customers")
+@PrimaryKeyJoinColumn(name = "user_id")
+public class IndividualCustomer extends User {
 
-	@Id
-	@GeneratedValue(strategy= GenerationType.IDENTITY)
-	
-	@Column(name="individual_id")
-	private int individualId;
+	/*
+	 * @Id
+	 * 
+	 * @GeneratedValue(strategy= GenerationType.IDENTITY)
+	 * 
+	 * @Column(name="individual_id") private int individualId;
+	 */
 	
 	@Column(name="first_name")
 	private String firstName;
@@ -38,13 +42,5 @@ public class IndividualCustomer {
 	@Column(name="birthday")
 	private String birthday;
 	
-	//@Column(name="user_id")
-	//private int userId;
 	
-	@OneToOne
-	@JoinColumn(name="user_id")
-	private User user; 
-	
-	@OneToMany(mappedBy="individualCustomer")
-	private List<Rental> rentals; 
 }

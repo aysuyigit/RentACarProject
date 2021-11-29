@@ -14,4 +14,5 @@ public class IndividualCustomerSearchListDto {
 	private String lastName;
 	private String birthday;
 	private int userId;
+	private int fikdeksPointPerson;
 }

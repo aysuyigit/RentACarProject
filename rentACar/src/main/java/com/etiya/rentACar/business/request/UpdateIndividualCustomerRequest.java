@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateIndividualCustomerRequest {
+	
 	@NotNull
 	private int individualId;
 	
@@ -22,8 +23,11 @@ public class UpdateIndividualCustomerRequest {
 	private int lastName;
 	
 	@NotNull
-	private int userId;
+	private String birthday;
 	
 	@NotNull
-	private String birthday;
+	private String password;
+	
+	@NotNull
+	private String email;
 }

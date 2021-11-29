@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.etiya.rentACar.business.abstracts.CarImageService;
@@ -34,8 +33,7 @@ public class CarImageManager implements CarImageService {
 	private CarImageDao carImageDao;
 	private ModelMapperService modelMapperService;
 	FileHelper fileHelper = new FileHelperManager();
-	@Value("${imagePath}")
-	private String mainPath;
+
 	@Autowired
 	public CarImageManager(CarImageDao carImageDao, ModelMapperService modelMapperService) {
 		super();
@@ -45,8 +43,8 @@ public class CarImageManager implements CarImageService {
 
 	@Override
 	public List<CarImageSearchListDto> getCarImages() {
-		List<CarImage> result = this.carImageDao.findAll();
-		List<CarImageSearchListDto> response = result.stream()
+		List<CarImage> list = this.carImageDao.findAll();	
+		List<CarImageSearchListDto> response = list.stream()
 				.map(carImage -> modelMapperService.forDto().map(carImage, CarImageSearchListDto.class))
 				.collect(Collectors.toList());
 

@@ -14,4 +14,5 @@ public interface RentalService {
 	Result save(CreateRentalRequest createRentalRequest);
 	Result delete(DeleteRentalRequest deleteRentalRequest);
 	Result update(UpdateRentalRequest updateRentalRequest);
+	Result checkCarIsReturned(int carId);
 }
