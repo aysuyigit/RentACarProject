@@ -4,7 +4,7 @@ public class FindeksService {
 	
 public int individualCustomerFindexPoint(String identityNumber) {
 		
-		return 500;
+		return 100;
 	}
 	
 	
