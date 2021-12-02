@@ -21,7 +21,7 @@ import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.abstracts.CarDao;
+import com.etiya.rentACar.business.abstracts.CarDao;
 import com.etiya.rentACar.entities.Car;
 import com.etiya.rentACar.entities.CarImage;
 import com.etiya.rentACar.entities.complexTypes.CarDetail;
@@ -158,5 +158,10 @@ public class CarManager implements CarService{
 	public Car getCarAsElementByCarId(int carId) {
 		Car car = carDao.getById(carId);
 		return car;
+	}
+
+	@Override
+	public Result checkExistingCar(int carId) {
+		return null;
 	}
 }

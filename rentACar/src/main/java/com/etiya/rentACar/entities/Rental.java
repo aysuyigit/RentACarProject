@@ -1,5 +1,7 @@
 package com.etiya.rentACar.entities;
 
+import java.sql.Date;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,27 +22,34 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name="rentals")
 public class Rental {
-	
+
 	@Id
 	@GeneratedValue(strategy= GenerationType.IDENTITY)
-	
+
 	@Column(name="rental_id")
 	private int rentalId;
-	
+
 	@Column(name="rent_date")
-	private String rentDate;
-	
+	private Date rentDate;
+
 	//@Column(name="individual_id")
 	//private int individualId;
 
 	@Column(name="return_date")
-	private String returnDate;
-	
+	private Date returnDate;
+
+	@Column(name="rent_city")
+	private String rentCity;
+
+	@Column(name="return_city")
+	private String returnCity;
+
 	@ManyToOne
 	@JoinColumn(name="car_id")
 	private Car car;
-	
-	@ManyToOne(cascade = CascadeType.DETACH)
-	@JoinColumn(name="individual_id")
-	private IndividualCustomer individualCustomer;
+
+	@ManyToOne (cascade = CascadeType.DETACH)
+	@JoinColumn(name = "user_id")
+	private User user;
 }
+

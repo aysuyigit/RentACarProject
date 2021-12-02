@@ -1,15 +1,16 @@
 package com.etiya.rentACar.business.request;
 
-import javax.validation.constraints.NotNull;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeleteRentalRequest {
-	@NotNull
-	private int rentalId;
+public class DeleteAdditionalServiceRequest {
+
+    @NotNull
+    private int serviceId;
 }

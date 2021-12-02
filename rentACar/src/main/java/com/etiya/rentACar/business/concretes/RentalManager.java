@@ -1,16 +1,25 @@
 package com.etiya.rentACar.business.concretes;
 
+import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.etiya.rentACar.business.abstracts.RentalService;
-import com.etiya.rentACar.business.dtos.RentalSearchListDto;
+import com.etiya.rentACar.business.abstracts.*;
 import com.etiya.rentACar.business.request.CreateRentalRequest;
 import com.etiya.rentACar.business.request.DeleteRentalRequest;
 import com.etiya.rentACar.business.request.UpdateRentalRequest;
+import com.etiya.rentACar.core.adapters.FinancialDataService;
+
+import com.etiya.rentACar.core.adapters.posServiceAdapter.PaymentApprovementService;
+import com.etiya.rentACar.entities.AdditionalService;
+import com.etiya.rentACar.entities.CreditCard;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+
+import com.etiya.rentACar.business.dtos.RentalSearchListDto;
+
 import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.DataResult;
@@ -18,7 +27,8 @@ import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.abstracts.RentalDao;
+import com.etiya.rentACar.business.abstracts.RentalDao;
+import com.etiya.rentACar.entities.Car;
 import com.etiya.rentACar.entities.Rental;
 
 @Service
@@ -26,12 +36,31 @@ public class RentalManager implements RentalService {
 
 	private RentalDao rentalDao;
 	private ModelMapperService modelMapperService;
-	
+	private CarService carService;
+	private MaintenanceService maintenanceService;
+	private FinancialDataService financialDataService;
+	private RentingBillService rentingBillService;
+	private PaymentApprovementService paymentApprovementService;
+	private CreditCardService creditCardService;
+	private AdditionalServiceService additionalServiceService;
+
 	@Autowired
-	public RentalManager(RentalDao rentalDao, ModelMapperService modelMapperService) {
+	public RentalManager(RentalDao rentalDao, ModelMapperService modelMapperService,
+						 CarService carService, FinancialDataService financialDataService,
+						 @Lazy MaintenanceService maintenanceService,RentingBillService rentingBillService,
+						 PaymentApprovementService paymentApprovementService,
+						 CreditCardService creditCardService,
+						 AdditionalServiceService additionalServiceService) {
 		super();
 		this.rentalDao = rentalDao;
 		this.modelMapperService = modelMapperService;
+		this.carService = carService;
+		this.maintenanceService = maintenanceService;
+		this.financialDataService = financialDataService;
+		this.rentingBillService = rentingBillService;
+		this.paymentApprovementService = paymentApprovementService;
+		this.creditCardService = creditCardService;
+		this.additionalServiceService = additionalServiceService;
 	}
 
 	@Override
@@ -42,33 +71,54 @@ public class RentalManager implements RentalService {
 		return new SuccessDataResult<List<RentalSearchListDto>>(response);
 	}
 
+
 	@Override
 	public Result save(CreateRentalRequest createRentalRequest) {
-		Result result = BusinessRules.run(checkCarIsReturned(createRentalRequest.getCarId()));
-		
+		Result result = BusinessRules.run(checkCarIsReturned(createRentalRequest.getCarId()),
+				checkFindeksPointAcceptability(createRentalRequest.getCarId(),createRentalRequest.getUserId()),
+				maintenanceService.checkIfCarIsOnMaintenance(createRentalRequest.getCarId()),
+				checkIfEndDateIsAfterStartDate(createRentalRequest.getReturnDate(),createRentalRequest.getRentDate()),
+				checkIfPaymentSuccesful(creditCardService.getById(4)));
+
 		if(result != null) {
 			return result;
 		}
-		 
+		updateCityNameIfReturnCityIsDifferent(createRentalRequest);
 		Rental rental = modelMapperService.forRequest().map(createRentalRequest, Rental.class);
 		this.rentalDao.save(rental);
-		return new SuccessResult("Rental added.");
+
+		if(createRentalRequest.getReturnDate() != null) {
+			this.rentingBillService.save(createRentalRequest);
+			return new SuccessResult("Rental log is added and renting bill is created.");
+		}
+
+		return new SuccessResult("Rental log is added.");
 	}
 
 	@Override
 	public Result delete(DeleteRentalRequest deleteRentalRequest) {
 		Rental rental = modelMapperService.forRequest().map(deleteRentalRequest, Rental.class);
 		this.rentalDao.delete(rental);
-		return new SuccessResult("Rental deleted.");
+		return new SuccessResult("Rental log is deleted.");
 	}
 
 	@Override
 	public Result update(UpdateRentalRequest updateRentalRequest) {
+		Result result = BusinessRules.run(checkIfEndDateIsAfterStartDate(updateRentalRequest.getReturnDate(), updateRentalRequest.getRentDate()));
+
+		if(result != null) {
+			return result;
+		}
+		updateCityNameIfReturnCityIsDifferent(updateRentalRequest);
+		this.carService.updateCarKilometer(updateRentalRequest.getCarId(),updateRentalRequest.getReturnKilometer());
 		Rental rental = modelMapperService.forRequest().map(updateRentalRequest, Rental.class);
 		this.rentalDao.save(rental);
-		return new SuccessResult("Rental updated.");
+
+		this.rentingBillService.update(updateRentalRequest);
+
+		return new SuccessResult("Rental log is updated and renting bill is created.");
 	}
-	
+
 	public Result checkCarIsReturned(int carId) {
 		List<Rental> result = this.rentalDao.getByCar_CarId(carId);
 		if(result != null) {
@@ -80,7 +130,72 @@ public class RentalManager implements RentalService {
 		}
 		return new SuccessResult();
 	}
+
+	private Result checkFindeksPointAcceptability(int carId, int userId) {
+		Car car = carService.getCarAsElementByCarId(carId);
+		int findeksCar = car.getFindeksPointCar();
+		int findeksUser = financialDataService.getFindeksScore(userId);
+		if(findeksCar>findeksUser) {
+			return new ErrorResult("Müşterinin findeks puanı yetersiz.");
+		}
+		return new SuccessResult();
+	}
+
+	private Result checkIfEndDateIsAfterStartDate(Date endDate, Date startDate) {
+		if(endDate != null) {
+			if(endDate.before(startDate)) {
+				return new ErrorResult("End date cannot be earlier than the start date!");
+			}
+		}
+		return new SuccessResult();
+	}
+
+	private void updateCityNameIfReturnCityIsDifferent(CreateRentalRequest createRentalRequest){
+		if(!((createRentalRequest.getRentCity()).equals(createRentalRequest.getReturnCity()))){
+			this.carService.updateCarCity(createRentalRequest.getCarId(),createRentalRequest.getReturnCity());
+		}
+	}
+	private void updateCityNameIfReturnCityIsDifferent(UpdateRentalRequest updateRentalRequest){
+		if(!((updateRentalRequest.getRentCity()).equals(updateRentalRequest.getReturnCity()))){
+			this.carService.updateCarCity(updateRentalRequest.getCarId(),updateRentalRequest.getReturnCity());
+		}
+	}
+	private Result checkIfPaymentSuccesful(CreditCard creditCard){
+		//creditCard.setCardNumber("");
+		boolean result = paymentApprovementService.checkPaymentSuccess(creditCard);
+		if(result==false){
+			return new ErrorResult("Ödeme başarısız. Araç kiralanamaz!");
+		}
+		return new SuccessResult();
+	}
+	public List<AdditionalService> extractAdditionalServicesFromString(CreateRentalRequest createRentalRequest){
+		String services = createRentalRequest.getAdditionalServices();
+		if(services == null){
+			return null;
+		}
+		if(services.equals("")){
+			return null;
+		}
+		String[] servicesArray = services.split(",");
+		List<AdditionalService> servicesAsElements = new ArrayList<AdditionalService>();
+		for (String service: servicesArray) {
+			servicesAsElements.add(additionalServiceService.getById(Integer.parseInt(service)));
+		}
+		return servicesAsElements;
+	}
+	public List<AdditionalService> extractAdditionalServicesFromString(UpdateRentalRequest updateRentalRequest){
+		String services = updateRentalRequest.getAdditionalServices();
+		if(services == null){
+			return null;
+		}
+		if(services.equals("")){
+			return null;
+		}
+		String[] servicesArray = services.split(",");
+		List<AdditionalService> servicesAsElements = new ArrayList<AdditionalService>();
+		for (String service: servicesArray) {
+			servicesAsElements.add(additionalServiceService.getById(Integer.parseInt(service)));
+		}
+		return servicesAsElements;
+	}
 }
-
-
-

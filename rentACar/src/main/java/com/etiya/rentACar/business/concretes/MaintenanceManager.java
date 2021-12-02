@@ -19,7 +19,7 @@ import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.abstracts.MaintenanceDao;
+import com.etiya.rentACar.business.abstracts.MaintenanceDao;
 import com.etiya.rentACar.entities.Maintenance;
 
 @Service

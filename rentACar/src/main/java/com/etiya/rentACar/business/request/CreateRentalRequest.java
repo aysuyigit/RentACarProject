@@ -1,8 +1,8 @@
 package com.etiya.rentACar.business.request;
 
-import javax.validation.constraints.NotNull;
+import java.sql.Date;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,19 +12,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateRentalRequest {
-	
-	@JsonIgnore
-	private int rentalId;
-	
+
 	@NotNull
-	private String rentDate;
- 
-	private String returnDate;
-	
+	private Date rentDate;
+
+	private Date returnDate;
+
+	@NotNull
+	private String rentCity;
+
+	@NotNull
+	private String returnCity;
+
 	@NotNull
 	private int carId;
-	
+
 	@NotNull
-	private int individualId;
-	
+	private int userId;
+
+	@NotNull
+	private int rentKilometer;
+
+	private String additionalServices;
+
+
 }

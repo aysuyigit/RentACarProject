@@ -8,6 +8,7 @@ import com.etiya.rentACar.business.request.DeleteCreditCardRequest;
 import com.etiya.rentACar.business.request.UpdateCreditCardRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
+import com.etiya.rentACar.entities.CreditCard;
 
 public interface CreditCardService {
  
@@ -15,5 +16,6 @@ public interface CreditCardService {
 	Result create(CreateCreditCardRequest createCreditCardRequest);
 	Result update(UpdateCreditCardRequest updateCreditCardRequest);
 	Result delete(DeleteCreditCardRequest deleteCreditCardRequest);
+	CreditCard getById(int cardId);
 
 }

@@ -23,4 +23,6 @@ public interface CarService {
 	DataResult<List<CarSearchListDto>> getByColorId(int colorId);
 	DataResult<CarDetailDto> getCarDetailsByCarId(int carId);
 	Car getCarAsElementByCarId(int carId);
+
+    Result checkExistingCar(int carId);
 }

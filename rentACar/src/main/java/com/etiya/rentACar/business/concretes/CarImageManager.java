@@ -24,7 +24,7 @@ import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.abstracts.CarImageDao;
+import com.etiya.rentACar.business.abstracts.CarImageDao;
 import com.etiya.rentACar.entities.CarImage;
 
 @Service

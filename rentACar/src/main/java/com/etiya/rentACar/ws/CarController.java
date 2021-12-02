@@ -40,10 +40,12 @@ public class CarController {
 	public List<CarSearchListDto> getCars(){
 		return this.carService.getCars();
 	}
+
 	@GetMapping("getWithBrandAndColor")
 	public DataResult<List<CarDetail>> getDetailedCars(){
 		return this.carService.getCarWithColorAndBrandDetails();
 	}
+
 	@GetMapping("getCarDetailsWithCarImages")
 	DataResult<CarDetailDto> getCarDetailsByCarId(@RequestParam("carId") int carId) {
 		return this.carService.getCarDetailsByCarId(carId);

@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name="cars")
 public class Car {
-	
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 
@@ -35,7 +35,7 @@ public class Car {
 	private String description;
 	@Column(name="findeks_point")
 	private int findeksPointCar;
-	
+
 	@ManyToOne
 	@JoinColumn(name="brand_id")
 	private Brand brand;
@@ -43,13 +43,22 @@ public class Car {
 	@ManyToOne
 	@JoinColumn(name="color_id")
 	private Color color;
-	
+
 	@OneToMany(mappedBy="car")
 	private List<Rental> rentals;
-	
+
 	@OneToMany(mappedBy="car")
 	private List<CarImage> carImages;
 
 	@OneToMany(mappedBy="car")
 	private List<Maintenance> maintenances;
+
+	@Column(name="city")
+	private String cityName;
+
+	@Column(name="kilometer")
+	private int kilometer;
+
+	@OneToMany(mappedBy = "car")
+	private List<CarDamage> carDamages;
 }
