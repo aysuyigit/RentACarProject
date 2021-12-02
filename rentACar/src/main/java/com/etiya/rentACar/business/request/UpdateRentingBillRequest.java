@@ -1,4 +1,4 @@
-package com.etiya.rentACar.business.request.rentingBillRequests;
+package com.etiya.rentACar.business.request;
 
 import java.sql.Date;
 

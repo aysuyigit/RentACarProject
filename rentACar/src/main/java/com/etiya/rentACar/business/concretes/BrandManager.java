@@ -16,7 +16,7 @@ import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.business.abstracts.BrandDao;
+import com.etiya.rentACar.dataAccess.BrandDao;
 import com.etiya.rentACar.entities.Brand;
 
 @Service

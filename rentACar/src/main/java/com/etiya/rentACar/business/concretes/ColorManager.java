@@ -14,7 +14,7 @@ import com.etiya.rentACar.business.request.UpdateColorRequest;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.business.abstracts.ColorDao;
+import com.etiya.rentACar.dataAccess.ColorDao;
 import com.etiya.rentACar.entities.Color;
 
 @Service

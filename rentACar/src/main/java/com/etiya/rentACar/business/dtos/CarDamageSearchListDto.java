@@ -1,6 +1,5 @@
 package com.etiya.rentACar.business.dtos;
 
-import com.etiya.rentACar.entities.Car;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

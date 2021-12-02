@@ -17,7 +17,7 @@ import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.business.abstracts.UserDao;
+import com.etiya.rentACar.dataAccess.UserDao;
 import com.etiya.rentACar.entities.User;
 
 @Service

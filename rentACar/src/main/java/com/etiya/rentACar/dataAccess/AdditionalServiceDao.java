@@ -1,7 +1,6 @@
-package com.etiya.rentACar.business.abstracts;
+package com.etiya.rentACar.dataAccess;
 
 import com.etiya.rentACar.entities.AdditionalService;
-import com.etiya.rentACar.entities.Brand;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AdditionalServiceDao extends JpaRepository<AdditionalService, Integer> {

@@ -1,4 +1,4 @@
-package com.etiya.rentACar.business.abstracts;
+package com.etiya.rentACar.dataAccess;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

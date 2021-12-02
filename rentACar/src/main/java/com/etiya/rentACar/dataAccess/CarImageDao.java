@@ -1,4 +1,4 @@
-package com.etiya.rentACar.business.abstracts;
+package com.etiya.rentACar.dataAccess;
 
 import java.util.List;
 

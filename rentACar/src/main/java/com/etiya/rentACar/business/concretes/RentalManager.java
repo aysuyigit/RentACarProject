@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.abstracts.*;
+import com.etiya.rentACar.dataAccess.business.abstracts.*;
 import com.etiya.rentACar.business.request.CreateRentalRequest;
 import com.etiya.rentACar.business.request.DeleteRentalRequest;
 import com.etiya.rentACar.business.request.UpdateRentalRequest;
@@ -27,7 +28,7 @@ import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.business.abstracts.RentalDao;
+import com.etiya.rentACar.dataAccess.RentalDao;
 import com.etiya.rentACar.entities.Car;
 import com.etiya.rentACar.entities.Rental;
 
