@@ -7,6 +7,7 @@ import com.etiya.rentACar.business.request.DeleteAdditionalServiceRequest;
 import com.etiya.rentACar.business.request.UpdateAdditionalServiceRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
+import com.etiya.rentACar.entities.AdditionalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,36 +15,28 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/additionalService")
+@RequestMapping("api/additionalServices")
 public class AdditionalServiceController {
-
     private AdditionalServiceService additionalServiceService;
 
     @Autowired
     public AdditionalServiceController(AdditionalServiceService additionalServiceService) {
         this.additionalServiceService = additionalServiceService;
     }
-
-    @GetMapping("/getAll")
+    @GetMapping("list")
     public DataResult<List<AdditionalServiceSearchListDto>> getAll(){
-        return  this.additionalServiceService.getAll();
+        return this.additionalServiceService.getAdditionalServices();
     }
-    @PostMapping("/add")
-    public Result save(@RequestBody @Valid CreateAdditionalServiceRequest createAdditionalServiceRequest){
+    @PostMapping("add")
+    public Result add(@RequestBody @Valid CreateAdditionalServiceRequest createAdditionalServiceRequest){
         return this.additionalServiceService.save(createAdditionalServiceRequest);
     }
-
-    @PutMapping("/update")
+    @DeleteMapping("delete")
+    public Result delete(@RequestBody @Valid DeleteAdditionalServiceRequest deleteAdditionalServiceRequest){
+        return this.additionalServiceService.delete(deleteAdditionalServiceRequest);
+    }
+    @PostMapping("update")
     public Result update(@RequestBody @Valid UpdateAdditionalServiceRequest updateAdditionalServiceRequest){
         return this.additionalServiceService.update(updateAdditionalServiceRequest);
     }
-    @DeleteMapping("/delete")
-    public  Result delete(@RequestBody @Valid DeleteAdditionalServiceRequest deleteAdditionalServiceRequest){
-        return this.additionalServiceService.delete(deleteAdditionalServiceRequest);
-    }
-
-
-
-
-
 }

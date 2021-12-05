@@ -16,6 +16,5 @@ public interface RentalService {
 	Result delete(DeleteRentalRequest deleteRentalRequest);
 	Result update(UpdateRentalRequest updateRentalRequest);
 	Result checkCarIsReturned(int carId);
-	public List<AdditionalService> extractAdditionalServicesFromString(CreateRentalRequest createRentalRequest);
-	public List<AdditionalService> extractAdditionalServicesFromString(UpdateRentalRequest updateRentalRequest);
+	public DataResult<List<AdditionalService>> extractAdditionalServicesFromString(UpdateRentalRequest updateRentalRequest);
 }

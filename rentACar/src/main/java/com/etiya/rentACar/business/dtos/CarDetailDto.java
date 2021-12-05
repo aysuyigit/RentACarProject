@@ -10,11 +10,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CarDetailDto {
-	
+
 	private int carId;
 	private String brandName;
 	private String colorName;
 	private double dailyPrice;
 	private String modelYear;
 	private List<String> imagePaths;
+	private String cityName;
+	private int kilometer;
+	private List<String> DamageDescriptions;
 }

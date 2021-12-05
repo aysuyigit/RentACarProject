@@ -13,27 +13,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateRentalRequest {
 
-	@NotNull
-	private Date rentDate;
+    @NotNull
+    private Date rentDate;
 
-	private Date returnDate;
+    //private Date returnDate;
 
-	@NotNull
-	private String rentCity;
+    @NotNull
+    private String rentCity;
 
-	@NotNull
-	private String returnCity;
+    @NotNull
+    private String returnCity;
 
-	@NotNull
-	private int carId;
+    @NotNull
+    private int carId;
 
-	@NotNull
-	private int userId;
+    @NotNull
+    private int userId;
 
-	@NotNull
-	private int rentKilometer;
+    @NotNull
+    private int rentKilometer;
 
-	private String additionalServices;
+    private String demandedAdditionalServices;
 
 
 }

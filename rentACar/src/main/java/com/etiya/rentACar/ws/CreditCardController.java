@@ -5,10 +5,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.etiya.rentACar.business.abstracts.CreditCardService;
 import com.etiya.rentACar.business.dtos.CreditCardDto;
@@ -18,6 +15,8 @@ import com.etiya.rentACar.business.request.UpdateCreditCardRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 
+@RestController
+@RequestMapping("api/creditcard")
 public class CreditCardController {
    private CreditCardService creditCardService;
 	

@@ -5,22 +5,31 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.sql.Date;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 
 public class CreateCreditCardRequest {
-    private String cardName;
-	
+	@NotNull
+	private String nameOnCard;
 
+	@NotNull
 	private String cardNumber;
-	
-	
-	private String expiration;
-	
+
+	@NotNull
+	private Date expiration;
+
+	@NotNull
+    @Size(min=3, max=3)
 	private String cvc;
-	
-	private int individualCustomerId;
+
+	@NotNull
+	private int userId;
 
 }

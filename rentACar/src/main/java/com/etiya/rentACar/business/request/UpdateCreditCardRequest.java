@@ -26,12 +26,14 @@ public class UpdateCreditCardRequest {
 	@NotNull(message = "Boş Geçilemez!")
 	@Size(min=2,max=30)
 	private String cardNumber;
-	
-	
+
+	@NotNull
+	private String nameOnCard;
+
 	private String expiration;
 	
 	@NotNull(message = "Boş Geçilemez!")
-	@Size(min=1,max=3)
+	@Size(min=3,max=3)
 	private String cvc;
 	
 	private int individualCustomerId;

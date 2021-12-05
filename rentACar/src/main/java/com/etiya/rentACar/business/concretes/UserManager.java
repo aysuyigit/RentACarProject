@@ -3,28 +3,31 @@ package com.etiya.rentACar.business.concretes;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.etiya.rentACar.business.request.CreateUserRequest;
+import com.etiya.rentACar.business.request.DeleteUserRequest;
+import com.etiya.rentACar.business.request.UpdateUserRequest;
+import com.etiya.rentACar.dataAccess.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.etiya.rentACar.business.abstracts.UserService;
 import com.etiya.rentACar.business.dtos.UserSearchListDto;
-import com.etiya.rentACar.business.request.CreateUserRequest;
-import com.etiya.rentACar.business.request.DeleteUserRequest;
-import com.etiya.rentACar.business.request.UpdateUserRequest;
+
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.DataResult;
+import com.etiya.rentACar.core.utilities.results.ErrorDataResult;
 import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.UserDao;
+
 import com.etiya.rentACar.entities.User;
 
 @Service
 public class UserManager implements UserService {
-	
+
 	private UserDao userDao;
-	
+
 	private ModelMapperService modelMapperService;
 
 	@Autowired
@@ -41,6 +44,7 @@ public class UserManager implements UserService {
 				.map(user, UserSearchListDto.class)).collect(Collectors.toList());
 		return new SuccessDataResult<List<UserSearchListDto>>(response);
 	}
+
 
 	@Override
 	public Result save(CreateUserRequest createUserRequest) {
@@ -70,13 +74,18 @@ public class UserManager implements UserService {
 		}
 		return new SuccessResult();
 	}
-	
 
 	@Override
-	public DataResult<UserSearchListDto> getByEmail(String email) {
-		boolean user = this.userDao.existsByeMail(email);
-		UserSearchListDto userSearchListDto = modelMapperService.forDto().map(user, UserSearchListDto.class);
-		return new SuccessDataResult<UserSearchListDto>(userSearchListDto);
+	public DataResult<User> getByEmail(String email) {
+		if(this.userDao.existsByeMail(email)) {
+			return new SuccessDataResult<User>(this.userDao.getByeMail(email));
+		}
+		return new ErrorDataResult<User>(null);
+	}
+
+	@Override
+	public User getById(int userId) {
+		return userDao.getById(userId);
 	}
 
 }

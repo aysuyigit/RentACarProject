@@ -35,7 +35,7 @@ public class User {
 	@Column(name="password")
 	private String password;
 	
-	@OneToMany(mappedBy="individualCustomer")
+	@OneToMany(mappedBy="user")
 	private List<Rental> rentals; 
 	
 

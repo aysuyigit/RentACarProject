@@ -32,9 +32,6 @@ public class Rental {
 	@Column(name="rent_date")
 	private Date rentDate;
 
-	//@Column(name="individual_id")
-	//private int individualId;
-
 	@Column(name="return_date")
 	private Date returnDate;
 
@@ -51,5 +48,8 @@ public class Rental {
 	@ManyToOne (cascade = CascadeType.DETACH)
 	@JoinColumn(name = "user_id")
 	private User user;
+
+	@Column(name="additional_service")
+	private String additionalService;
 }
 

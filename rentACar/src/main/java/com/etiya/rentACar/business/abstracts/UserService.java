@@ -8,6 +8,7 @@ import com.etiya.rentACar.business.request.DeleteUserRequest;
 import com.etiya.rentACar.business.request.UpdateUserRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
+import com.etiya.rentACar.entities.User;
 
 public interface UserService {
 	DataResult<List<UserSearchListDto>> getAll();
@@ -15,5 +16,6 @@ public interface UserService {
 	Result delete(DeleteUserRequest deleteUserRequest);
 	Result update(UpdateUserRequest updateUserRequest);
 	Result existsByEmail(String email);
-    DataResult<UserSearchListDto> getByEmail(String email);
+	DataResult<User> getByEmail(String email);
+	User getById(int userId);
 }

@@ -24,7 +24,7 @@ public class UpdateRentalRequest {
 	@NotNull
 	private Date rentDate;
 
-	@NotNull
+
 	private Date returnDate;
 
 	@NotNull
@@ -37,5 +37,6 @@ public class UpdateRentalRequest {
 	private int returnKilometer;
 
 	private String additionalServices;
+	private String demandedAdditionalServices;
 
 }

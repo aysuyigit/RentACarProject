@@ -15,7 +15,7 @@ public class CreateAdditionalServiceRequest {
     private String serviceName;
 
     @NotNull
-    private String serviceDailyPrice;
+    private int serviceDailyPrice;
 
 
 }

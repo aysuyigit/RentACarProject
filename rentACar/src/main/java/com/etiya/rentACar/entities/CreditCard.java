@@ -15,33 +15,35 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name="creditcards")
 public class CreditCard {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id")
 	private int cardId;
-	
+
 	@Column(name="card_name")
-	private String cardName;
-	
+	private String nameOnCard;
+
 	@Column(name="card_number")
 	private String cardNumber;
-	
-	@Column(name="expiration")
-	private String expiration;
-	
+
+	@Column(name="expirationDate")
+	private Date expiration;
+
 	@Column(name="cvc")
 	private String cvc;
-	
+
 	@ManyToOne
 	@JsonIgnore
-	@JoinColumn(name = "individual_customer_id")
-	private IndividualCustomer individualCustomer;
+	@JoinColumn(name = "user_id")
+	private User user;
 
 }

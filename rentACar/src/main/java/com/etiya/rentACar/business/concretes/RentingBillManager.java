@@ -1,30 +1,30 @@
 package com.etiya.rentACar.business.concretes;
 
-
 import java.sql.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.etiya.rentACar.business.abstracts.CarService;
 import com.etiya.rentACar.business.abstracts.RentalService;
-import com.etiya.rentACar.business.abstracts.UserService;
-import com.etiya.rentACar.business.request.UpdateRentalRequest;
-
-import com.etiya.rentACar.business.request.CreateRentalRequest;
-import com.etiya.rentACar.business.request.DeleteRentingBillRequest;
+import com.etiya.rentACar.business.request.UpdateRentingBillRequest;
+import com.etiya.rentACar.dataAccess.RentingBillDao;
 import com.etiya.rentACar.entities.AdditionalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import com.etiya.rentACar.business.abstracts.CarService;
 import com.etiya.rentACar.business.abstracts.RentingBillService;
+import com.etiya.rentACar.business.abstracts.UserService;
 import com.etiya.rentACar.business.dtos.RentingBillSearchListDto;
+import com.etiya.rentACar.business.request.CreateRentalRequest;
+import com.etiya.rentACar.business.request.UpdateRentalRequest;
+import com.etiya.rentACar.business.request.DeleteRentingBillRequest;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.RentingBillDao;
+
 import com.etiya.rentACar.entities.RentingBill;
 
 @Service
@@ -54,24 +54,21 @@ public class RentingBillManager implements RentingBillService {
         return new SuccessDataResult<List<RentingBillSearchListDto>>(response);
     }
 
-
     @Override
-    public Result save(CreateRentalRequest createRentalRequest) {
+    public Result save(UpdateRentalRequest updateRentalRequest) {
 
         RentingBill rentingBill = new RentingBill();
         Date dateNow = new java.sql.Date(new java.util.Date().getTime());
         rentingBill.setCreationDate(dateNow);
-        rentingBill.setRentingStartDate(createRentalRequest.getRentDate());
-        rentingBill.setRentingEndDate(createRentalRequest.getReturnDate());
-        rentingBill.setUser(userService.getById(createRentalRequest.getUserId()));
-        int totalRentDay = calculateDifferenceBetweenDays(createRentalRequest.getReturnDate(), createRentalRequest.getRentDate());
+        rentingBill.setRentingStartDate(updateRentalRequest.getRentDate());
+        rentingBill.setRentingEndDate(updateRentalRequest.getReturnDate());
+        rentingBill.setUser(userService.getById(updateRentalRequest.getUserId()));
+        int totalRentDay = calculateDifferenceBetweenDays(updateRentalRequest.getReturnDate(), updateRentalRequest.getRentDate());
         rentingBill.setTotalRentingDay(totalRentDay);
-        int dailyPriceOfCar = (int)(carService.getCarDetailsById(createRentalRequest.getCarId()).getData().getDailyPrice());
-
-        rentingBill.setRentingPrice(calculateRentingPrice(createRentalRequest.getRentCity(),
-                createRentalRequest.getReturnCity(),
-                dailyPriceOfCar,totalRentDay,createRentalRequest));
-
+        int dailyPriceOfCar = (int)(carService.getCarDetailsByCarId(updateRentalRequest.getCarId()).getData().getDailyPrice());
+        rentingBill.setRentingPrice(calculateRentingPrice(updateRentalRequest.getRentCity(),
+                updateRentalRequest.getReturnCity(),
+                dailyPriceOfCar,totalRentDay,updateRentalRequest));
         rentingBillDao.save(rentingBill);
         return new SuccessResult("Renting bill added.");
     }
@@ -84,21 +81,10 @@ public class RentingBillManager implements RentingBillService {
     }
 
     @Override
-    public Result update(UpdateRentalRequest updateRentalRequest) {
-        RentingBill rentingBill = new RentingBill();
-        Date dateNow = new java.sql.Date(new java.util.Date().getTime());
-        rentingBill.setCreationDate(dateNow);
-        rentingBill.setRentingStartDate(updateRentalRequest.getRentDate());
-        rentingBill.setRentingEndDate(updateRentalRequest.getReturnDate());
-        rentingBill.setUser(userService.getById(updateRentalRequest.getUserId()));
-        int totalRentDay = calculateDifferenceBetweenDays(updateRentalRequest.getReturnDate(), updateRentalRequest.getRentDate());
-        rentingBill.setTotalRentingDay(totalRentDay);
-        int dailyPriceOfCar = (int)(carService.getCarDetailsById(updateRentalRequest.getCarId()).getData().getDailyPrice());
-        rentingBill.setRentingPrice(calculateRentingPrice(updateRentalRequest.getRentCity(),
-                updateRentalRequest.getReturnCity(),
-                dailyPriceOfCar,totalRentDay,updateRentalRequest));
-        rentingBillDao.save(rentingBill);
-        return new SuccessResult("Renting bill added.");
+    public Result update(UpdateRentingBillRequest updateRentingBillRequest) {
+        RentingBill rentingBill = modelMapperService.forRequest().map(updateRentingBillRequest, RentingBill.class);
+        this.rentingBillDao.save(rentingBill);
+        return new SuccessResult("Renting bill updated.");
     }
 
     private int calculateDifferenceBetweenDays(Date endDate, Date startDate) {
@@ -114,7 +100,6 @@ public class RentingBillManager implements RentingBillService {
         return new SuccessDataResult<List<RentingBillSearchListDto>>(response);
     }
 
-
     @Override
     public DataResult<List<RentingBillSearchListDto>> getRentingBillByDateInterval(Date startDate, Date endDate) {
         List<RentingBill> list = rentingBillDao.findByCreationDateBetween(startDate, endDate);
@@ -124,36 +109,9 @@ public class RentingBillManager implements RentingBillService {
     }
 
     private int calculateRentingPrice(String rentCity, String returnCity, int dailyPriceOfCar,
-                                      int totalRentDay, CreateRentalRequest createRentalRequest){
-
-        List<AdditionalService> list = rentalService.extractAdditionalServicesFromString(createRentalRequest);
-        if (list == null){
-            if (!rentCity.equals(returnCity)){
-                int price = (dailyPriceOfCar*totalRentDay) + 500;
-                return price;
-            }
-            int price = dailyPriceOfCar*totalRentDay;
-            return price;
-        }
-        int totalAdditionalServiceCost=0;
-        for (AdditionalService service : list) {
-            totalAdditionalServiceCost += service.getServiceDailyPrice();
-        }
-
-        if (!rentCity.equals(returnCity)){
-            int price = (dailyPriceOfCar*totalRentDay) + 500;
-            price += totalAdditionalServiceCost * totalRentDay;
-            return price;
-        }
-        int price = dailyPriceOfCar*totalRentDay;
-        price += totalAdditionalServiceCost * totalRentDay;
-        return price;
-
-    }
-    private int calculateRentingPrice(String rentCity, String returnCity, int dailyPriceOfCar,
                                       int totalRentDay, UpdateRentalRequest updateRentalRequest){
 
-        List<AdditionalService> list = rentalService.extractAdditionalServicesFromString(updateRentalRequest);
+        List<AdditionalService> list = rentalService.extractAdditionalServicesFromString(updateRentalRequest).getData();
         if (list == null){
             if (!rentCity.equals(returnCity)){
                 int price = (dailyPriceOfCar*totalRentDay) + 500;

@@ -34,12 +34,15 @@ public class RentalController {
 	
 	@GetMapping("list")
 	public DataResult<List<RentalSearchListDto>> getAll(){
+
 		return this.rentalService.getAll();
 	}
+
 	@PostMapping("add")
 	public Result add(@RequestBody @Valid CreateRentalRequest createRentalRequest) {
 		return this.rentalService.save(createRentalRequest);
 	}
+
 	@DeleteMapping("delete")
 	public Result delete(@RequestBody @Valid DeleteRentalRequest deleteRentalRequest) {
 		return this.rentalService.delete(deleteRentalRequest);

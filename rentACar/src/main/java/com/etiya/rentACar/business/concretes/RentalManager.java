@@ -3,16 +3,18 @@ package com.etiya.rentACar.business.concretes;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.abstracts.*;
-import com.etiya.rentACar.dataAccess.business.abstracts.*;
+
 import com.etiya.rentACar.business.request.CreateRentalRequest;
 import com.etiya.rentACar.business.request.DeleteRentalRequest;
 import com.etiya.rentACar.business.request.UpdateRentalRequest;
-import com.etiya.rentACar.core.adapters.FinancialDataService;
-
+import com.etiya.rentACar.core.adapters.findeksServiceAdapter.FinancialDataService;
 import com.etiya.rentACar.core.adapters.posServiceAdapter.PaymentApprovementService;
+import com.etiya.rentACar.core.utilities.results.*;
+import com.etiya.rentACar.dataAccess.RentalDao;
 import com.etiya.rentACar.entities.AdditionalService;
 import com.etiya.rentACar.entities.CreditCard;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +25,7 @@ import com.etiya.rentACar.business.dtos.RentalSearchListDto;
 
 import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
-import com.etiya.rentACar.core.utilities.results.DataResult;
-import com.etiya.rentACar.core.utilities.results.ErrorResult;
-import com.etiya.rentACar.core.utilities.results.Result;
-import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
-import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.RentalDao;
+
 import com.etiya.rentACar.entities.Car;
 import com.etiya.rentACar.entities.Rental;
 
@@ -73,13 +70,14 @@ public class RentalManager implements RentalService {
 	}
 
 
+
 	@Override
 	public Result save(CreateRentalRequest createRentalRequest) {
 		Result result = BusinessRules.run(checkCarIsReturned(createRentalRequest.getCarId()),
 				checkFindeksPointAcceptability(createRentalRequest.getCarId(),createRentalRequest.getUserId()),
 				maintenanceService.checkIfCarIsOnMaintenance(createRentalRequest.getCarId()),
-				checkIfEndDateIsAfterStartDate(createRentalRequest.getReturnDate(),createRentalRequest.getRentDate()),
-				checkIfPaymentSuccesful(creditCardService.getById(4)));
+				checkIfPaymentSuccesful(creditCardService.getById(4)),
+				checkIfAdditionalServicesAreDeclaredInTrueFormat(createRentalRequest.getDemandedAdditionalServices()));
 
 		if(result != null) {
 			return result;
@@ -88,10 +86,10 @@ public class RentalManager implements RentalService {
 		Rental rental = modelMapperService.forRequest().map(createRentalRequest, Rental.class);
 		this.rentalDao.save(rental);
 
-		if(createRentalRequest.getReturnDate() != null) {
+		/*if(createRentalRequest.getReturnDate() != null) {
 			this.rentingBillService.save(createRentalRequest);
 			return new SuccessResult("Rental log is added and renting bill is created.");
-		}
+		}*/
 
 		return new SuccessResult("Rental log is added.");
 	}
@@ -105,7 +103,8 @@ public class RentalManager implements RentalService {
 
 	@Override
 	public Result update(UpdateRentalRequest updateRentalRequest) {
-		Result result = BusinessRules.run(checkIfEndDateIsAfterStartDate(updateRentalRequest.getReturnDate(), updateRentalRequest.getRentDate()));
+		Result result = BusinessRules.run(checkIfEndDateIsAfterStartDate(updateRentalRequest.getReturnDate(), updateRentalRequest.getRentDate()),
+				checkIfAdditionalServicesAreDeclaredInTrueFormat(updateRentalRequest.getDemandedAdditionalServices()));
 
 		if(result != null) {
 			return result;
@@ -113,11 +112,13 @@ public class RentalManager implements RentalService {
 		updateCityNameIfReturnCityIsDifferent(updateRentalRequest);
 		this.carService.updateCarKilometer(updateRentalRequest.getCarId(),updateRentalRequest.getReturnKilometer());
 		Rental rental = modelMapperService.forRequest().map(updateRentalRequest, Rental.class);
+		if (updateRentalRequest.getReturnDate() != null){
+			this.rentingBillService.save(updateRentalRequest);
+			this.rentalDao.save(rental);
+			return new SuccessResult("Rental log is updated and renting bill is created.");
+		}
 		this.rentalDao.save(rental);
-
-		this.rentingBillService.update(updateRentalRequest);
-
-		return new SuccessResult("Rental log is updated and renting bill is created.");
+		return new SuccessResult("Rental log is updated.");
 	}
 
 	public Result checkCarIsReturned(int carId) {
@@ -131,6 +132,7 @@ public class RentalManager implements RentalService {
 		}
 		return new SuccessResult();
 	}
+
 
 	private Result checkFindeksPointAcceptability(int carId, int userId) {
 		Car car = carService.getCarAsElementByCarId(carId);
@@ -169,8 +171,9 @@ public class RentalManager implements RentalService {
 		}
 		return new SuccessResult();
 	}
-	public List<AdditionalService> extractAdditionalServicesFromString(CreateRentalRequest createRentalRequest){
-		String services = createRentalRequest.getAdditionalServices();
+
+	public DataResult<List<AdditionalService>> extractAdditionalServicesFromString(UpdateRentalRequest updateRentalRequest) throws NoSuchElementException {
+		String services = updateRentalRequest.getDemandedAdditionalServices();
 		if(services == null){
 			return null;
 		}
@@ -180,23 +183,23 @@ public class RentalManager implements RentalService {
 		String[] servicesArray = services.split(",");
 		List<AdditionalService> servicesAsElements = new ArrayList<AdditionalService>();
 		for (String service: servicesArray) {
-			servicesAsElements.add(additionalServiceService.getById(Integer.parseInt(service)));
+			boolean isExisting = additionalServiceService.isExisting(Integer.parseInt(service));
+			if (isExisting){
+				servicesAsElements.add(additionalServiceService.getById(Integer.parseInt(service)));
+			} else{
+				throw new NoSuchElementException("Servis "+ service + " bulunamadı.");
+			}
 		}
-		return servicesAsElements;
+		return new SuccessDataResult<List<AdditionalService>>(servicesAsElements);
 	}
-	public List<AdditionalService> extractAdditionalServicesFromString(UpdateRentalRequest updateRentalRequest){
-		String services = updateRentalRequest.getAdditionalServices();
-		if(services == null){
-			return null;
+	private Result checkIfAdditionalServicesAreDeclaredInTrueFormat(String demandedAdditionalServices){
+		String regex = "^[1-9]+(,[1-9]+)*$";
+		if (demandedAdditionalServices == null || demandedAdditionalServices == ""){
+			return new SuccessResult();
 		}
-		if(services.equals("")){
-			return null;
+		if (!demandedAdditionalServices.matches(regex)){
+			return new ErrorResult("Additional services are declared in a wrong way! Please write it as service id while seperating them with commas.");
 		}
-		String[] servicesArray = services.split(",");
-		List<AdditionalService> servicesAsElements = new ArrayList<AdditionalService>();
-		for (String service: servicesArray) {
-			servicesAsElements.add(additionalServiceService.getById(Integer.parseInt(service)));
-		}
-		return servicesAsElements;
+		return new SuccessResult();
 	}
 }
