@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.abstracts.RentalService;
+import com.etiya.rentACar.business.constants.messages.RentalMessages;
+import com.etiya.rentACar.business.constants.messages.RentingBillMessages;
 import com.etiya.rentACar.business.request.UpdateRentingBillRequest;
+import com.etiya.rentACar.core.utilities.business.BusinessRules;
+import com.etiya.rentACar.core.utilities.results.*;
 import com.etiya.rentACar.dataAccess.RentingBillDao;
 import com.etiya.rentACar.entities.AdditionalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +20,9 @@ import com.etiya.rentACar.business.abstracts.CarService;
 import com.etiya.rentACar.business.abstracts.RentingBillService;
 import com.etiya.rentACar.business.abstracts.UserService;
 import com.etiya.rentACar.business.dtos.RentingBillSearchListDto;
-import com.etiya.rentACar.business.request.CreateRentalRequest;
 import com.etiya.rentACar.business.request.UpdateRentalRequest;
 import com.etiya.rentACar.business.request.DeleteRentingBillRequest;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
-import com.etiya.rentACar.core.utilities.results.DataResult;
-import com.etiya.rentACar.core.utilities.results.Result;
-import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
-import com.etiya.rentACar.core.utilities.results.SuccessResult;
 
 import com.etiya.rentACar.entities.RentingBill;
 
@@ -70,21 +69,21 @@ public class RentingBillManager implements RentingBillService {
                 updateRentalRequest.getReturnCity(),
                 dailyPriceOfCar,totalRentDay,updateRentalRequest));
         rentingBillDao.save(rentingBill);
-        return new SuccessResult("Renting bill added.");
+        return new SuccessResult(RentingBillMessages.add);
     }
 
     @Override
     public Result delete(DeleteRentingBillRequest deleteRentingBillRequest) {
         RentingBill rentingBill = modelMapperService.forRequest().map(deleteRentingBillRequest, RentingBill.class);
         this.rentingBillDao.delete(rentingBill);
-        return new SuccessResult("Renting bill deleted.");
+        return new SuccessResult(RentingBillMessages.delete);
     }
 
     @Override
     public Result update(UpdateRentingBillRequest updateRentingBillRequest) {
         RentingBill rentingBill = modelMapperService.forRequest().map(updateRentingBillRequest, RentingBill.class);
         this.rentingBillDao.save(rentingBill);
-        return new SuccessResult("Renting bill updated.");
+        return new SuccessResult(RentingBillMessages.update);
     }
 
     private int calculateDifferenceBetweenDays(Date endDate, Date startDate) {
@@ -102,6 +101,10 @@ public class RentingBillManager implements RentingBillService {
 
     @Override
     public DataResult<List<RentingBillSearchListDto>> getRentingBillByDateInterval(Date startDate, Date endDate) {
+        Result result = BusinessRules.run(rentalService.checkIfEndDateIsAfterStartDate(endDate,startDate));
+        if(result!=null){
+            return new ErrorDataResult<List<RentingBillSearchListDto>>(null, RentalMessages.checkIfEndDateIsAfterStartDate);
+        }
         List<RentingBill> list = rentingBillDao.findByCreationDateBetween(startDate, endDate);
         List<RentingBillSearchListDto> response = list.stream().map(rentingBill -> modelMapperService.forDto().
                 map(rentingBill, RentingBillSearchListDto.class)).collect(Collectors.toList());

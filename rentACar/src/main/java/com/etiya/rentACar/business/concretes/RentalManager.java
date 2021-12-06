@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.abstracts.*;
 
+import com.etiya.rentACar.business.constants.messages.RentalMessages;
 import com.etiya.rentACar.business.request.CreateRentalRequest;
 import com.etiya.rentACar.business.request.DeleteRentalRequest;
 import com.etiya.rentACar.business.request.UpdateRentalRequest;
@@ -77,7 +78,8 @@ public class RentalManager implements RentalService {
 				checkFindeksPointAcceptability(createRentalRequest.getCarId(),createRentalRequest.getUserId()),
 				maintenanceService.checkIfCarIsOnMaintenance(createRentalRequest.getCarId()),
 				checkIfPaymentSuccesful(creditCardService.getById(4)),
-				checkIfAdditionalServicesAreDeclaredInTrueFormat(createRentalRequest.getDemandedAdditionalServices()));
+				checkIfAdditionalServicesAreDeclaredInTrueFormat(createRentalRequest.getDemandedAdditionalServices())
+		        );
 
 		if(result != null) {
 			return result;
@@ -91,14 +93,14 @@ public class RentalManager implements RentalService {
 			return new SuccessResult("Rental log is added and renting bill is created.");
 		}*/
 
-		return new SuccessResult("Rental log is added.");
+		return new SuccessResult(RentalMessages.add);
 	}
 
 	@Override
 	public Result delete(DeleteRentalRequest deleteRentalRequest) {
 		Rental rental = modelMapperService.forRequest().map(deleteRentalRequest, Rental.class);
 		this.rentalDao.delete(rental);
-		return new SuccessResult("Rental log is deleted.");
+		return new SuccessResult(RentalMessages.delete);
 	}
 
 	@Override
@@ -115,10 +117,10 @@ public class RentalManager implements RentalService {
 		if (updateRentalRequest.getReturnDate() != null){
 			this.rentingBillService.save(updateRentalRequest);
 			this.rentalDao.save(rental);
-			return new SuccessResult("Rental log is updated and renting bill is created.");
+			return new SuccessResult(RentalMessages.updateAndBilling);
 		}
 		this.rentalDao.save(rental);
-		return new SuccessResult("Rental log is updated.");
+		return new SuccessResult(RentalMessages.update);
 	}
 
 	public Result checkCarIsReturned(int carId) {
@@ -126,7 +128,7 @@ public class RentalManager implements RentalService {
 		if(result != null) {
 			for (Rental rentals : this.rentalDao.getByCar_CarId(carId)) {
 				if(rentals.getReturnDate() == null) {
-					return new ErrorResult("Araç teslim edilmediği için kiralanamaz");
+					return new ErrorResult(RentalMessages.checkCarIsReturned);
 				}
 			}
 		}
@@ -139,15 +141,15 @@ public class RentalManager implements RentalService {
 		int findeksCar = car.getFindeksPointCar();
 		int findeksUser = financialDataService.getFindeksScore(userId);
 		if(findeksCar>findeksUser) {
-			return new ErrorResult("Müşterinin findeks puanı yetersiz.");
+			return new ErrorResult(RentalMessages.checkFindeksPointAcceptability);
 		}
 		return new SuccessResult();
 	}
 
-	private Result checkIfEndDateIsAfterStartDate(Date endDate, Date startDate) {
+	public Result checkIfEndDateIsAfterStartDate(Date endDate, Date startDate) {
 		if(endDate != null) {
 			if(endDate.before(startDate)) {
-				return new ErrorResult("End date cannot be earlier than the start date!");
+				return new ErrorResult(RentalMessages.checkIfEndDateIsAfterStartDate);
 			}
 		}
 		return new SuccessResult();
@@ -167,7 +169,7 @@ public class RentalManager implements RentalService {
 		//creditCard.setCardNumber("");
 		boolean result = paymentApprovementService.checkPaymentSuccess(creditCard);
 		if(result==false){
-			return new ErrorResult("Ödeme başarısız. Araç kiralanamaz!");
+			return new ErrorResult();
 		}
 		return new SuccessResult();
 	}
@@ -198,7 +200,7 @@ public class RentalManager implements RentalService {
 			return new SuccessResult();
 		}
 		if (!demandedAdditionalServices.matches(regex)){
-			return new ErrorResult("Additional services are declared in a wrong way! Please write it as service id while seperating them with commas.");
+			return new ErrorResult(RentalMessages.checkIfAdditionalServicesAreDeclaredInTrueFormat);
 		}
 		return new SuccessResult();
 	}

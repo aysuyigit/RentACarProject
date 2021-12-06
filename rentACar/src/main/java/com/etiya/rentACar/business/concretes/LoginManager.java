@@ -1,5 +1,6 @@
 package com.etiya.rentACar.business.concretes;
 
+import com.etiya.rentACar.business.constants.messages.LoginMessages;
 import org.springframework.stereotype.Service;
 
 import com.etiya.rentACar.business.abstracts.IndividualCustomerService;
@@ -39,14 +40,14 @@ public class LoginManager implements LoginService {
 			return result;
 		}
 
-		return new SuccessResult("Successfuly login");
+		return new SuccessResult(LoginMessages.successLogin);
 	}
 	
 
 	private Result checkCustomerByEmail(LoginRequest loginRequest) {
 
 		if (this.userService.existsByEmail(loginRequest.getEmail()).isSuccess()) {
-			return new ErrorResult("Email hatalı");
+			return new ErrorResult(LoginMessages.errorCheckCustomerByEmail);
 		}
 		return new SuccessResult();
 	}
@@ -57,7 +58,7 @@ public class LoginManager implements LoginService {
 
 			if (!this.userService.getByEmail(loginRequest.getEmail()).getData().getPassword()
 					.equals(loginRequest.getPassword())) {
-				return new ErrorResult("Password hatalı");
+				return new ErrorResult(LoginMessages.errorCheckCustomerByPassword);
 			}
 		}
 		return new SuccessResult();
@@ -72,7 +73,7 @@ public class LoginManager implements LoginService {
 		
 		//result.setFindeksScore(rand.nextInt(1300)+600);
 		this.individualCustomerService.save(result);
-		return new SuccessResult("Customer added");
+		return new SuccessResult(LoginMessages.individualCustomerRegister);
 	}
 
 

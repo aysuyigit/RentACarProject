@@ -23,6 +23,8 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import javax.persistence.EntityNotFoundException;
+
 @SpringBootApplication
 @EnableSwagger2
 @RestControllerAdvice
@@ -66,5 +68,11 @@ public class RentACarApplication {
 		ErrorResult error = new ErrorResult("Kayıt bulunamadı.");
 		return error;
 	}
-		
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public ErrorResult handleEntityNotFoundException(EntityNotFoundException exception){
+
+		ErrorResult error = new ErrorResult("Kayıt bulunamadı.");
+		return error;
+	}
 }

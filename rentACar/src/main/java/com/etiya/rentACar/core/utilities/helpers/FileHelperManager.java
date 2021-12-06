@@ -17,7 +17,7 @@ public class FileHelperManager implements FileHelper {
 		createNewCarImageFolder(carId);
 		String newFolderName = "car" + carId;
 		String newImageName = createImageName(multipartFile).getMessage();
-		File file = new File("C:\\Users\\halit.mancar\\Desktop\\img\\" + newFolderName + "\\" + newImageName);
+		File file = new File("C:\\Users\\aysu.yigit\\OneDrive - ETİYA\\Masaüstü\\img\\" + newFolderName + "\\" + newImageName);
 		file.createNewFile();
 		FileOutputStream os = new FileOutputStream(file);
 		os.write(multipartFile.getBytes());
@@ -28,8 +28,8 @@ public class FileHelperManager implements FileHelper {
 	@Override
 	public Result deleteImage(String imagePath) {
 		if (!imagePath.isEmpty() && !imagePath.isBlank()) {
-		File file = new File(imagePath);
-		file.delete();
+			File file = new File(imagePath);
+			file.delete();
 		}
 		return new SuccessResult();
 	}
@@ -39,15 +39,15 @@ public class FileHelperManager implements FileHelper {
 		if (!imagePath.isEmpty() && !imagePath.isBlank()) {
 			File file = new File(imagePath);
 			file.delete();
-			}
-		
+		}
+
 		return new SuccessResult();
 	}
-	
+
 	private Result createNewCarImageFolder(int carId) {
 		String newFolderName = "car" + carId;
-		File newFolder = new File("C:\\Users\\halit.mancar\\Desktop\\img\\" + newFolderName);
-				newFolder.mkdir();
+		File newFolder = new File("C:\\Users\\aysu.yigit\\OneDrive - ETİYA\\Masaüstü\\img\\" + newFolderName);
+		newFolder.mkdir();
 		return new SuccessResult(newFolderName);
 	}
 	private Result createImageName(MultipartFile file) {
@@ -56,7 +56,7 @@ public class FileHelperManager implements FileHelper {
 		return new SuccessResult(newImageName);
 	}
 	public Result returnFilePath(int carId) {
-		String path = "C:\\Users\\halit.mancar\\Desktop\\img\\car" + carId;
+		String path = "C:\\Users\\aysu.yigit\\OneDrive - ETİYA\\Masaüstü\\img\\car" + carId;
 		return new SuccessResult(path);
 	}
 

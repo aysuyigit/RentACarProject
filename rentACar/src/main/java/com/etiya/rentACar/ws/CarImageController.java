@@ -5,6 +5,9 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.etiya.rentACar.business.request.CreateCarImageRequest;
+import com.etiya.rentACar.business.request.DeleteCarImageRequest;
+import com.etiya.rentACar.business.request.UpdateCarImageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.etiya.rentACar.business.abstracts.CarImageService;
 import com.etiya.rentACar.business.dtos.CarImageSearchListDto;
-import com.etiya.rentACar.business.request.CreateCarImageRequest;
-import com.etiya.rentACar.business.request.DeleteCarImageRequest;
-import com.etiya.rentACar.business.request.UpdateCarImageRequest;
+
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 
@@ -34,17 +35,17 @@ public class CarImageController {
 		super();
 		this.carImageService = carImageService;
 	}
-	
+
 	@GetMapping("list")
 	public List<CarImageSearchListDto> getCarImages(){
 		return this.carImageService.getCarImages();
 	}
-	
+
 	@GetMapping("getCarImagesByCarId")
-    public DataResult<List<CarImageSearchListDto>> getCarImagesByCarId(int carId) {
-        return this.carImageService.getCarImageByCarId(carId);
-    }
-	
+	public DataResult<List<CarImageSearchListDto>> getCarImagesByCarId(int carId) {
+		return this.carImageService.getCarImageByCarId(carId);
+	}
+
 	@PostMapping("add")
 	public Result add(@RequestParam("car_id") int carId, MultipartFile multipartFile) throws Exception {
 		CreateCarImageRequest carImageRequest = new CreateCarImageRequest();

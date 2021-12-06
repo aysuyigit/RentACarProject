@@ -3,6 +3,7 @@ package com.etiya.rentACar.business.concretes;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.etiya.rentACar.business.constants.messages.MaintenanceMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,14 +56,14 @@ public class MaintenanceManager implements MaintenanceService{
 		
 		Maintenance maintenance = modelMapperService.forRequest().map(createMaintenanceRequest, Maintenance.class);
 		this.maintenanceDao.save(maintenance);
-		return new SuccessResult("Maintenance log added.");
+		return new SuccessResult(MaintenanceMessages.add);
 	}
 
 	@Override
 	public Result delete(DeleteMaintenanceRequest deleteMaintenanceRequest) {
 		Maintenance maintenance = modelMapperService.forRequest().map(deleteMaintenanceRequest, Maintenance.class);
 		this.maintenanceDao.delete(maintenance);
-		return new SuccessResult("Maintenance log removed.");
+		return new SuccessResult(MaintenanceMessages.delete);
 	}
 
 	@Override
@@ -74,13 +75,13 @@ public class MaintenanceManager implements MaintenanceService{
 		}
 		Maintenance maintenance = modelMapperService.forRequest().map(updateMaintenanceRequest, Maintenance.class);
 		this.maintenanceDao.save(maintenance);
-		return new SuccessResult("Maintenance log updated.");
+		return new SuccessResult(MaintenanceMessages.update);
 	}
 	
 	private Result checkIfCarIsRentedNow(int carId) {
 		Result isCarReturned = rentalService.checkCarIsReturned(carId);
 		if(!isCarReturned.isSuccess()) {
-			return new ErrorResult("Araç kirada olduğu için bakıma gönderilemez.");
+			return new ErrorResult(MaintenanceMessages.checkIfCarIsRentedNow);
 		}
 		return new SuccessResult();
 	}
@@ -89,7 +90,7 @@ public class MaintenanceManager implements MaintenanceService{
 		List<Maintenance> maintenance = maintenanceDao.getByCar_CarId(carId);
 			for (Maintenance maintenance2 : maintenance) {
 				if(maintenance2.getEndDate() == null) {
-					return new ErrorResult("Araç bakımda.");
+					return new ErrorResult(MaintenanceMessages.checkIfCarIsOnMaintenance);
 				}
 			}
 		

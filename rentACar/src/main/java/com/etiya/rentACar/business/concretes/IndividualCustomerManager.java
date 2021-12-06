@@ -3,6 +3,9 @@ package com.etiya.rentACar.business.concretes;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.etiya.rentACar.business.abstracts.UserService;
+import com.etiya.rentACar.business.constants.messages.IndividualCustomerMessages;
+import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,11 +27,13 @@ public class IndividualCustomerManager implements IndividualCustomerService{
 	
 	private IndividualCustomerDao individualCustomerDao;
 	private ModelMapperService modelMapperService;
+	private UserService userService;
 	@Autowired
-	public IndividualCustomerManager(IndividualCustomerDao individualCustomerDao, ModelMapperService modelMapperService) {
+	public IndividualCustomerManager(IndividualCustomerDao individualCustomerDao, ModelMapperService modelMapperService,UserService userService) {
 		super();
 		this.individualCustomerDao = individualCustomerDao;
 		this.modelMapperService = modelMapperService;
+		this.userService = userService;
 	}
 
 	@Override
@@ -41,28 +46,27 @@ public class IndividualCustomerManager implements IndividualCustomerService{
 
 	@Override
 	public Result save(CreateIndividualCustomerRequest createIndividualCustomerRequest) {
-//		int max=1900;
-//		int min=0;
-//		int range = max - min + 1;
-//		int randomNumberInt = (int)(Math.random() * range) + min;
-
+        Result result = BusinessRules.run(userService.existsByEmail(createIndividualCustomerRequest.getEmail()));
+		if(result != null){
+			return result;
+		}
 		IndividualCustomer individualCustomer = modelMapperService.forRequest().map(createIndividualCustomerRequest, IndividualCustomer.class);
 		this.individualCustomerDao.save(individualCustomer);
-		return new SuccessResult("Individual customer added.");
+		return new SuccessResult(IndividualCustomerMessages.add);
 	}
 
 	@Override
 	public Result delete(DeleteIndividualCustomerRequest deleteIndividualCustomerRequest) {
 		IndividualCustomer individualCustomer = modelMapperService.forRequest().map(deleteIndividualCustomerRequest, IndividualCustomer.class);
 		this.individualCustomerDao.delete(individualCustomer);
-		return new SuccessResult("Individual customer deleted.");
+		return new SuccessResult(IndividualCustomerMessages.delete);
 	}
 
 	@Override
 	public Result update(UpdateIndividualCustomerRequest updateIndividualCustomerRequest) {
 		IndividualCustomer individualCustomer = modelMapperService.forRequest().map(updateIndividualCustomerRequest, IndividualCustomer.class);
 		this.individualCustomerDao.save(individualCustomer);
-		return new SuccessResult("Individual customer updated.");
+		return new SuccessResult(IndividualCustomerMessages.update);
 	}
 	
 //	private Result checkUserIdDuplication(int userId) {

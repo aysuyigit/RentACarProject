@@ -3,6 +3,7 @@ package com.etiya.rentACar.business.concretes;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.etiya.rentACar.business.constants.messages.ColorMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +47,7 @@ public class ColorManager implements ColorService{
 	public Result save(CreateColorRequest createColorRequest) {
 		Color color = modelMapperService.forRequest().map(createColorRequest, Color.class);
 		this.colorDao.save(color);
-		return new SuccessResult("Color added.");
+		return new SuccessResult(ColorMessages.add);
 	}
 
 
@@ -54,7 +55,7 @@ public class ColorManager implements ColorService{
 	public Result delete(DeleteColorRequest deleteColorRequest) {
 		Color color = modelMapperService.forRequest().map(deleteColorRequest, Color.class);
 		this.colorDao.delete(color);
-		return new SuccessResult("Color added.");
+		return new SuccessResult(ColorMessages.delete);
 	}
 
 
@@ -62,6 +63,6 @@ public class ColorManager implements ColorService{
 	public Result update(UpdateColorRequest updateColorRequest) {
 		Color color = modelMapperService.forRequest().map(updateColorRequest, Color.class);
 		this.colorDao.save(color);
-		return new SuccessResult("Color added.");
+		return new SuccessResult(ColorMessages.update);
 	}
 }

@@ -3,6 +3,7 @@ package com.etiya.rentACar.business.concretes;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.etiya.rentACar.business.constants.messages.UserMessages;
 import com.etiya.rentACar.business.request.CreateUserRequest;
 import com.etiya.rentACar.business.request.DeleteUserRequest;
 import com.etiya.rentACar.business.request.UpdateUserRequest;
@@ -46,25 +47,19 @@ public class UserManager implements UserService {
 	}
 
 
-	@Override
-	public Result save(CreateUserRequest createUserRequest) {
-		User user= modelMapperService.forRequest().map(createUserRequest, User.class);
-		this.userDao.save(user);
-		return new SuccessResult("User added.");
-	}
 
 	@Override
 	public Result delete(DeleteUserRequest deleteUserRequest) {
 		User user= modelMapperService.forRequest().map(deleteUserRequest, User.class);
 		this.userDao.delete(user);
-		return new SuccessResult("User deleted.");
+		return new SuccessResult(UserMessages.delete);
 	}
 
 	@Override
 	public Result update(UpdateUserRequest updateUserRequest) {
 		User user= modelMapperService.forRequest().map(updateUserRequest, User.class);
 		this.userDao.save(user);
-		return new SuccessResult("User updated.");
+		return new SuccessResult(UserMessages.update);
 	}
 
 	@Override
@@ -87,5 +82,8 @@ public class UserManager implements UserService {
 	public User getById(int userId) {
 		return userDao.getById(userId);
 	}
+
+
+
 
 }

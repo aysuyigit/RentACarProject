@@ -2,6 +2,7 @@ package com.etiya.rentACar.business.concretes;
 
 
 import com.etiya.rentACar.business.abstracts.CarService;
+import com.etiya.rentACar.business.constants.messages.CarDamageMessages;
 import com.etiya.rentACar.business.request.DeleteCarDamageRequest;
 import com.etiya.rentACar.business.request.UpdateCarDamageRequest;
 import com.etiya.rentACar.business.abstracts.CarDamageService;
@@ -49,21 +50,21 @@ public class CarDamageManager implements CarDamageService {
         }
         CarDamage carDamage = modelMapperService.forRequest().map(createCarDamageRequest, CarDamage.class);
         this.carDamageDao.save(carDamage);
-        return new SuccessResult("Car damage log is added.");
+        return new SuccessResult(CarDamageMessages.add);
     }
 
     @Override
     public Result delete(DeleteCarDamageRequest deleteCarDamageRequest) {
         CarDamage carDamage = modelMapperService.forRequest().map(deleteCarDamageRequest, CarDamage.class);
         this.carDamageDao.delete(carDamage);
-        return new SuccessResult("Car damage log is deleted.");
+        return new SuccessResult(CarDamageMessages.delete);
     }
 
     @Override
     public Result update(UpdateCarDamageRequest updateCarDamageRequest) {
         CarDamage carDamage = modelMapperService.forRequest().map(updateCarDamageRequest, CarDamage.class);
         this.carDamageDao.save(carDamage);
-        return new SuccessResult("Car damage log is updated.");
+        return new SuccessResult(CarDamageMessages.update);
     }
 
     @Override
@@ -77,7 +78,7 @@ public class CarDamageManager implements CarDamageService {
     public Result checkIfCarExists(int carId) {
         boolean isExisting = carService.checkExistingCar(carId).isSuccess();
         if (!isExisting) {
-            return new ErrorResult("Araç bulunamadı.");
+            return new ErrorResult(CarDamageMessages.checkIfCarExists);
         }
         return new SuccessResult();
     }

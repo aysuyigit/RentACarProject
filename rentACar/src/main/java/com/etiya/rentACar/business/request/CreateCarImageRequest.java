@@ -14,13 +14,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateCarImageRequest {
+
 	@JsonIgnore
 	private int imageId;
-	
+
 	@NotNull
 	private int carId;
-	
+
 	@JsonIgnore
 	private MultipartFile multipartFile;
+
 
 }

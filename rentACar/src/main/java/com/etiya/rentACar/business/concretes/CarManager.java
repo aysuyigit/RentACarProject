@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.abstracts.CarDamageService;
+import com.etiya.rentACar.business.constants.messages.CarMessages;
 import com.etiya.rentACar.business.dtos.CarDamageSearchListDto;
 import com.etiya.rentACar.business.request.CreateCarRequest;
 import com.etiya.rentACar.business.request.DeleteCarRequest;
@@ -64,14 +65,14 @@ public class CarManager implements CarService {
 	public Result save(CreateCarRequest createCarRequest) {
 		Car car = modelMapperService.forRequest().map(createCarRequest, Car.class);
 		this.carDao.save(car);
-		return new SuccessResult("Car added.");
+		return new SuccessResult(CarMessages.add);
 	}
 
 	@Override
 	public Result delete(DeleteCarRequest deleteCarRequest) {
 		Car car = modelMapperService.forRequest().map(deleteCarRequest, Car.class);
 		this.carDao.delete(car);
-		return new SuccessResult("Car deleted.");
+		return new SuccessResult(CarMessages.delete);
 	}
 
 	@Override
@@ -83,7 +84,7 @@ public class CarManager implements CarService {
 
 		Car car = modelMapperService.forRequest().map(updateCarRequest, Car.class);
 		this.carDao.save(car);
-		return new SuccessResult("Car updated.");
+		return new SuccessResult(CarMessages.update);
 	}
 
 	@Override
@@ -129,7 +130,7 @@ public class CarManager implements CarService {
 	public DataResult<CarDetailDto> getCarDetailsByCarId(int carId) {
 		Result result = BusinessRules.run(checkExistingCar(carId));
 		if (result != null) {
-			return new ErrorDataResult<CarDetailDto>(null, "Araç bulunamadı.");
+			return new ErrorDataResult<CarDetailDto>(null, CarMessages.getCarDetailsByCarId);
 		}
 		Car car = this.carDao.getById(carId);
 		CarDetailDto carDetailDto = modelMapperService.forDto().map(car, CarDetailDto.class);
@@ -159,7 +160,7 @@ public class CarManager implements CarService {
 	public Result checkExistingCar(int carId) {
 		boolean isExist = carDao.existsById(carId);
 		if (!isExist) {
-			return new ErrorResult("Araç bulunamadı.");
+			return new ErrorResult(CarMessages.checkExistingCar);
 		}
 		return new SuccessResult();
 	}
@@ -221,7 +222,7 @@ public class CarManager implements CarService {
 			list.add(carDamageSearchListDto.getDamageDescription());
 		}
 		if (list.size() == 0){
-			list.add("The car has no damages.");
+			list.add(CarMessages.getCarDamageDescriptionsAsList);
 		}
 		return list;
 	}

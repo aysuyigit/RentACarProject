@@ -1,5 +1,6 @@
 package com.etiya.rentACar.business.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,10 @@ import java.sql.Date;
 @NoArgsConstructor
 
 public class CreateCreditCardRequest {
+	@JsonIgnore
+	@NotNull
+	private int cardId;
+
 	@NotNull
 	private String nameOnCard;
 

@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.etiya.rentACar.business.constants.messages.CreditCardMessages;
 import com.etiya.rentACar.business.request.CreateCreditCardRequest;
 import com.etiya.rentACar.business.request.DeleteCreditCardRequest;
 import com.etiya.rentACar.business.request.UpdateCreditCardRequest;
@@ -54,7 +55,7 @@ public class CreditCardManager implements CreditCardService {
 		}
 		CreditCard creditCard = modelMapperService.forRequest().map(createCreditCardRequest, CreditCard.class);
 		this.creditCardDao.save(creditCard);
-		return new SuccessResult("Card saved.");
+		return new SuccessResult(CreditCardMessages.add);
 	}
 
 	@Override
@@ -65,14 +66,14 @@ public class CreditCardManager implements CreditCardService {
 		}
 		CreditCard creditCard = modelMapperService.forRequest().map(updateCreditCardRequest, CreditCard.class);
 		this.creditCardDao.save(creditCard);
-		return new SuccessResult("Card updated.");
+		return new SuccessResult(CreditCardMessages.update);
 	}
 
 	@Override
 	public Result delete(DeleteCreditCardRequest deleteCreditCardRequest) {
 		CreditCard creditCard = modelMapperService.forRequest().map(deleteCreditCardRequest, CreditCard.class);
 		this.creditCardDao.delete(creditCard);
-		return new SuccessResult("Card deleted.");
+		return new SuccessResult(CreditCardMessages.delete);
 	}
 
 	@Override
@@ -86,7 +87,7 @@ public class CreditCardManager implements CreditCardService {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(cardNumber);
 		if(!matcher.matches()) {
-			return new ErrorResult("Invalid credit card format");
+			return new ErrorResult(CreditCardMessages.errorCheckCreditCardFormat);
 		}
 		return new SuccessResult();
 	}

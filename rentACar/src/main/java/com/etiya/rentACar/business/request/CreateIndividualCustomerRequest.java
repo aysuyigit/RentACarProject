@@ -23,7 +23,9 @@ public class CreateIndividualCustomerRequest {
 	
 	@NotNull
 	private String birthday;
-	
+
+	private String email;
+
 	@NotNull
 	@JsonIgnore
 	private int findeksPointPerson;
