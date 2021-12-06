@@ -97,7 +97,7 @@ public class CarImageManager implements CarImageService {
 		if (resultCheck != null) {
 			List<CarImage> carImages = new ArrayList<CarImage>();
 			CarImage carImage1 = new CarImage();
-			carImage1.setImagePath("C:\\Users\\halit.mancar\\Desktop\\orange-car-hp-right-mercedez");
+			carImage1.setImagePath("C:\\Users\\aysu.yigit\\Desktop\\orange-car-hp-right-mercedez");
 			carImages.add(carImage1);
 			List<CarImageSearchListDto> list1 = carImages.stream()
 					.map(carImage -> modelMapperService.forDto().map(carImage, CarImageSearchListDto.class))
@@ -113,7 +113,7 @@ public class CarImageManager implements CarImageService {
 	}
 
 	private Result checkCarImageCount(int carId) {
-		File file = new File("C:\\Users\\halit.mancar\\Desktop\\img\\car" + carId);
+		File file = new File("C:\\Users\\aysu.yigit\\Desktop\\img\\car" + carId);
 		if (file.exists()) {
 			int numberOfFiles = file.listFiles().length;
 			if (numberOfFiles >= 5) {
@@ -124,7 +124,7 @@ public class CarImageManager implements CarImageService {
 	}
 
 	private Result checkIfThereIsNoPicture(int carId) {
-		File file = new File("C:\\Users\\halit.mancar\\Desktop\\img\\car" + carId);
+		File file = new File("C:\\Users\\aysu.yigit\\Desktop\\img\\car" + carId);
 		if (file.exists()) {
 			if (file.listFiles().length == 0) {
 				return new ErrorResult("default picture");
