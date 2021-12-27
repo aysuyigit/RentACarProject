@@ -3,6 +3,7 @@ package com.etiya.rentACar.business.concretes;
 
 import com.etiya.rentACar.business.abstracts.CarService;
 import com.etiya.rentACar.business.constants.messages.CarDamageMessages;
+import com.etiya.rentACar.business.constants.messages.CarMessages;
 import com.etiya.rentACar.business.request.DeleteCarDamageRequest;
 import com.etiya.rentACar.business.request.UpdateCarDamageRequest;
 import com.etiya.rentACar.business.abstracts.CarDamageService;
@@ -28,7 +29,7 @@ public class CarDamageManager implements CarDamageService {
     private CarService carService;
 
     @Autowired
-    public CarDamageManager(ModelMapperService modelMapperService, CarDamageDao carDamageDao, CarService carService) {
+    public CarDamageManager(ModelMapperService modelMapperService, CarDamageDao carDamageDao,CarService carService) {
         this.modelMapperService = modelMapperService;
         this.carDamageDao = carDamageDao;
         this.carService = carService;
@@ -75,10 +76,10 @@ public class CarDamageManager implements CarDamageService {
         return new SuccessDataResult<List<CarDamageSearchListDto>>(response);
     }
 
-    public Result checkIfCarExists(int carId) {
+    public Result checkIfCarExists(int carId){
         boolean isExisting = carService.checkExistingCar(carId).isSuccess();
-        if (!isExisting) {
-            return new ErrorResult(CarDamageMessages.checkIfCarExists);
+        if(!isExisting){
+            return new ErrorResult(CarMessages.carNotFound);
         }
         return new SuccessResult();
     }

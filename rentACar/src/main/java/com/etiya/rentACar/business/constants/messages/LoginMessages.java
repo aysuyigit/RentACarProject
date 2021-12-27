@@ -2,8 +2,8 @@ package com.etiya.rentACar.business.constants.messages;
 
 public class LoginMessages {
 
-    public static final String successLogin="Successfuly login";
-    public static final String errorCheckCustomerByEmail = "Email incorrect";
-    public static final String errorCheckCustomerByPassword ="Password incorrect";
-    public static final String individualCustomerRegister = "Customer added";
+    public static final String loginSuccessful = "Login successful!";
+    public static final String wrongPassword = "Wrong password!";
+    public static final String wrongEmail = "Wrong e-mail!";
+    public static final String passwordConfirmationError = "Password does not match!";
 }

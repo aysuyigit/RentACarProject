@@ -45,4 +45,8 @@ public class CreateCarRequest {
 	@NotNull
 	private int kilometer;
 
+	@NotNull
+	@Min(1)
+	private int cityId;
+
 }

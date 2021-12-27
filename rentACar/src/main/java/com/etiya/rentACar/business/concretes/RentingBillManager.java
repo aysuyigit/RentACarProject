@@ -1,12 +1,14 @@
 package com.etiya.rentACar.business.concretes;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.abstracts.RentalService;
 import com.etiya.rentACar.business.constants.messages.RentalMessages;
 import com.etiya.rentACar.business.constants.messages.RentingBillMessages;
+import com.etiya.rentACar.business.constants.messages.UserMessages;
 import com.etiya.rentACar.business.request.UpdateRentingBillRequest;
 import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.results.*;
@@ -93,6 +95,10 @@ public class RentingBillManager implements RentingBillService {
 
     @Override
     public DataResult<List<RentingBillSearchListDto>> getRentingBillByUserId(int userId) {
+        Result result = BusinessRules.run(userService.existsById(userId));
+        if (result != null){
+            return new ErrorDataResult<List<RentingBillSearchListDto>>(null, UserMessages.userDoesNotExist);
+        }
         List<RentingBill> list = rentingBillDao.getByUser_UserId(userId);
         List<RentingBillSearchListDto> response = list.stream().map(rentingBill -> modelMapperService.forDto().
                 map(rentingBill, RentingBillSearchListDto.class)).collect(Collectors.toList());
@@ -102,8 +108,8 @@ public class RentingBillManager implements RentingBillService {
     @Override
     public DataResult<List<RentingBillSearchListDto>> getRentingBillByDateInterval(Date startDate, Date endDate) {
         Result result = BusinessRules.run(rentalService.checkIfEndDateIsAfterStartDate(endDate,startDate));
-        if(result!=null){
-            return new ErrorDataResult<List<RentingBillSearchListDto>>(null, RentalMessages.checkIfEndDateIsAfterStartDate);
+        if (result != null){
+            return new ErrorDataResult<List<RentingBillSearchListDto>>(null, RentalMessages.dateAccordance);
         }
         List<RentingBill> list = rentingBillDao.findByCreationDateBetween(startDate, endDate);
         List<RentingBillSearchListDto> response = list.stream().map(rentingBill -> modelMapperService.forDto().
@@ -111,12 +117,16 @@ public class RentingBillManager implements RentingBillService {
         return new SuccessDataResult<List<RentingBillSearchListDto>>(response);
     }
 
-    private int calculateRentingPrice(String rentCity, String returnCity, int dailyPriceOfCar,
+    private int calculateRentingPrice(int rentCity, int returnCity, int dailyPriceOfCar,
                                       int totalRentDay, UpdateRentalRequest updateRentalRequest){
 
-        List<AdditionalService> list = rentalService.extractAdditionalServicesFromString(updateRentalRequest).getData();
+        List<AdditionalService> list = new ArrayList<>();
+        if (rentalService.extractAdditionalServicesFromString(updateRentalRequest) != null){
+            list = rentalService.extractAdditionalServicesFromString(updateRentalRequest).getData();
+        }
+
         if (list == null){
-            if (!rentCity.equals(returnCity)){
+            if (rentCity != (returnCity)){
                 int price = (dailyPriceOfCar*totalRentDay) + 500;
                 return price;
             }
@@ -128,7 +138,7 @@ public class RentingBillManager implements RentingBillService {
             totalAdditionalServiceCost += service.getServiceDailyPrice();
         }
 
-        if (!rentCity.equals(returnCity)){
+        if (rentCity != (returnCity)){
             int price = (dailyPriceOfCar*totalRentDay) + 500;
             price += totalAdditionalServiceCost * totalRentDay;
             return price;

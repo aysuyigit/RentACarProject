@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.etiya.rentACar.business.abstracts.UserService;
 import com.etiya.rentACar.business.dtos.UserSearchListDto;
-import com.etiya.rentACar.business.request.CreateUserRequest;
-import com.etiya.rentACar.business.request.DeleteUserRequest;
-import com.etiya.rentACar.business.request.UpdateUserRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 
@@ -34,14 +31,5 @@ public class UserController {
 	@GetMapping("list")
 	public DataResult<List<UserSearchListDto>> getAll(){
 		return this.userService.getAll();
-	}
-
-	@DeleteMapping("delete")
-	public Result delete(@RequestBody @Valid DeleteUserRequest deleteUserRequest) {
-		return this.userService.delete(deleteUserRequest);
-	}
-	@PutMapping("update")
-	public Result update(@RequestBody @Valid UpdateUserRequest updateUserRequest) {
-		return this.userService.update(updateUserRequest);
 	}
 }

@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.sql.Date;
 
 @Getter
@@ -33,6 +31,8 @@ public class CreateCreditCardRequest {
 	@NotNull
     @Size(min=3, max=3)
 	private String cvc;
+
+
 
 	@NotNull
 	private int userId;

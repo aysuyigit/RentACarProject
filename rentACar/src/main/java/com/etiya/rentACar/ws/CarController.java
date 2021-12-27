@@ -27,9 +27,9 @@ import com.etiya.rentACar.entities.complexTypes.CarDetail;
 @RestController
 @RequestMapping("api/car")
 public class CarController {
-	
+
 	private CarService carService;
-	
+
 	@Autowired
 	public CarController(CarService carService) {
 		super();
@@ -40,12 +40,10 @@ public class CarController {
 	public List<CarSearchListDto> getCars(){
 		return this.carService.getCars();
 	}
-
 	@GetMapping("getWithBrandAndColor")
 	public DataResult<List<CarDetail>> getDetailedCars(){
 		return this.carService.getCarWithColorAndBrandDetails();
 	}
-
 	@GetMapping("getCarDetailsWithCarImages")
 	DataResult<CarDetailDto> getCarDetailsByCarId(@RequestParam("carId") int carId) {
 		return this.carService.getCarDetailsByCarId(carId);
@@ -56,7 +54,11 @@ public class CarController {
 	}
 	@GetMapping("getCarsWithColorId")
 	public DataResult<List<CarSearchListDto>> getCarsByColorId(@RequestParam("color_id") int colorId){
-		return this.carService.getByBrandId(colorId);
+		return this.carService.getByColorId(colorId);
+	}
+	@GetMapping("getCarsWithCity")
+	public DataResult<List<CarSearchListDto>> getCarsByCityName(@RequestParam("city_id") int cityId){
+		return this.carService.getByCity(cityId);
 	}
 	@PostMapping("add")
 	public Result add(@RequestBody @Valid CreateCarRequest createCarRequest) {
@@ -69,5 +71,9 @@ public class CarController {
 	@PutMapping("update")
 	public Result update(@RequestBody @Valid UpdateCarRequest updateCarRequest) {
 		return this.carService.update(updateCarRequest);
+	}
+	@GetMapping("getAllWithoutCarsAtMaintenance")
+	public DataResult<List<CarDetail>> getAllExcludingCarsAtMaintenance(){
+		return this.carService.getCarsThatAreNotOnMaintenance();
 	}
 }

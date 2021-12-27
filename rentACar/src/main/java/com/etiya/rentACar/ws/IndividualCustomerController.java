@@ -24,22 +24,17 @@ import com.etiya.rentACar.core.utilities.results.Result;
 @RestController
 @RequestMapping("api/individualCustomer")
 public class IndividualCustomerController {
-	
 	private IndividualCustomerService individualCustomerService;
 
 	@Autowired
 	public IndividualCustomerController(IndividualCustomerService individualCustomerService) {
 		super();
-		this.individualCustomerService = individualCustomerService; 
+		this.individualCustomerService = individualCustomerService;
 	}
-	
+
 	@GetMapping("list")
 	public DataResult<List<IndividualCustomerSearchListDto>> getAll(){
 		return this.individualCustomerService.getAll();
-	}
-	@PostMapping("add")
-	public Result add(@RequestBody @Valid CreateIndividualCustomerRequest createIndividualCustomerRequest) {
-		return this.individualCustomerService.save(createIndividualCustomerRequest);
 	}
 	@DeleteMapping("delete")
 	public Result delete(@RequestBody @Valid DeleteIndividualCustomerRequest deleteIndividualCustomerRequest) {

@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.etiya.rentACar.business.abstracts.CarDamageService;
+import com.etiya.rentACar.business.abstracts.*;
+import com.etiya.rentACar.business.constants.messages.CarDamageMessages;
 import com.etiya.rentACar.business.constants.messages.CarMessages;
 import com.etiya.rentACar.business.dtos.CarDamageSearchListDto;
 import com.etiya.rentACar.business.request.CreateCarRequest;
@@ -17,9 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.etiya.rentACar.business.abstracts.CarImageService;
-import com.etiya.rentACar.business.abstracts.CarService;
-import com.etiya.rentACar.business.abstracts.MaintenanceService;
 import com.etiya.rentACar.business.dtos.CarDetailDto;
 import com.etiya.rentACar.business.dtos.CarSearchListDto;
 
@@ -32,21 +30,24 @@ import com.etiya.rentACar.entities.complexTypes.CarDetail;
 @Service
 public class CarManager implements CarService {
 
+
 	private CarDao carDao;
 	private ModelMapperService modelMapperService;
 	private CarImageService carImageService;
 	private MaintenanceService maintenanceService;
 	private CarDamageService carDamageService;
+	private CityService cityService;
 
 	@Autowired
 	public CarManager(CarDao carDao, ModelMapperService modelMapperService, @Lazy CarImageService carImageService,
-					  @Lazy MaintenanceService maintenanceService, @Lazy CarDamageService carDamageService) {
+					  @Lazy MaintenanceService maintenanceService, @Lazy CarDamageService carDamageService,CityService cityService) {
 		super();
 		this.carDao = carDao;
 		this.modelMapperService = modelMapperService;
 		this.carImageService = carImageService;
 		this.maintenanceService = maintenanceService;
 		this.carDamageService = carDamageService;
+		this.cityService = cityService;
 	}
 
 	@Override
@@ -58,8 +59,6 @@ public class CarManager implements CarService {
 
 		return response;
 	}
-
-
 
 	@Override
 	public Result save(CreateCarRequest createCarRequest) {
@@ -95,11 +94,6 @@ public class CarManager implements CarService {
 	}
 
 	@Override
-	public DataResult<CarSearchListDto> getCarDetailsById(int id) {
-		return null;
-	}
-
-	@Override
 	public DataResult<List<CarSearchListDto>> getByBrandId(int brandId) {
 		List<Car> cars = this.carDao.getByBrand_BrandId(brandId);
 		List<CarSearchListDto> response = cars.stream().map(car -> modelMapperService.forDto()
@@ -118,8 +112,8 @@ public class CarManager implements CarService {
 	}
 
 	@Override
-	public DataResult<List<CarSearchListDto>> getByCityName(String cityName) {
-		List<Car> list = carDao.getByCityName(cityName);
+	public DataResult<List<CarSearchListDto>> getByCity(int cityId) {
+		List<Car> list = carDao.getByCity(cityService.getByCityId(cityId));
 		List<CarSearchListDto> result = list.stream().map(car -> modelMapperService.forDto().
 				map(car, CarSearchListDto.class)).collect(Collectors.toList());
 		List<CarSearchListDto> response = deleteCarsOnMaintenanceFromCarSearchListDtoList(result);
@@ -130,7 +124,7 @@ public class CarManager implements CarService {
 	public DataResult<CarDetailDto> getCarDetailsByCarId(int carId) {
 		Result result = BusinessRules.run(checkExistingCar(carId));
 		if (result != null) {
-			return new ErrorDataResult<CarDetailDto>(null, CarMessages.getCarDetailsByCarId);
+			return new ErrorDataResult<CarDetailDto>(null, CarMessages.carNotFound);
 		}
 		Car car = this.carDao.getById(carId);
 		CarDetailDto carDetailDto = modelMapperService.forDto().map(car, CarDetailDto.class);
@@ -146,9 +140,9 @@ public class CarManager implements CarService {
 	}
 
 	@Override
-	public void updateCarCity(int carId, String cityName) {
+	public void updateCarCity(int carId, int cityId) {
 		Car car = carDao.getById(carId);
-		car.setCityName(cityName);
+		car.setCity(cityService.getByCityId(cityId));
 	}
 
 	@Override
@@ -160,7 +154,7 @@ public class CarManager implements CarService {
 	public Result checkExistingCar(int carId) {
 		boolean isExist = carDao.existsById(carId);
 		if (!isExist) {
-			return new ErrorResult(CarMessages.checkExistingCar);
+			return new ErrorResult(CarMessages.carNotFound);
 		}
 		return new SuccessResult();
 	}
@@ -210,7 +204,7 @@ public class CarManager implements CarService {
 			list.add(image.getImagePath());
 		}
 		if (list.size() == 0) {
-			list.add("C:\\Users\\aysu.yigit\\Desktop\\orange-car-hp-right-mercedez");
+			list.add("C:\\Users\\aysu.yigit\\OneDrive - ETİYA\\Masaüstü\\etiya-222");
 		}
 		return list;
 	}
@@ -222,9 +216,8 @@ public class CarManager implements CarService {
 			list.add(carDamageSearchListDto.getDamageDescription());
 		}
 		if (list.size() == 0){
-			list.add(CarMessages.getCarDamageDescriptionsAsList);
+			list.add(CarDamageMessages.carDamageNotFound);
 		}
 		return list;
 	}
-
 }

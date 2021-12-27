@@ -5,10 +5,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.etiya.rentACar.business.abstracts.UserService;
 import com.etiya.rentACar.business.constants.messages.CreditCardMessages;
 import com.etiya.rentACar.business.request.CreateCreditCardRequest;
 import com.etiya.rentACar.business.request.DeleteCreditCardRequest;
 import com.etiya.rentACar.business.request.UpdateCreditCardRequest;
+import com.etiya.rentACar.dataAccess.CreditCardDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +23,9 @@ import com.etiya.rentACar.core.utilities.results.ErrorResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
 import com.etiya.rentACar.core.utilities.results.SuccessResult;
-import com.etiya.rentACar.dataAccess.CreditCardDao;
 import com.etiya.rentACar.entities.CreditCard;
+import org.apache.commons.lang3.StringUtils;
+
 
 
 @Service
@@ -30,12 +33,14 @@ public class CreditCardManager implements CreditCardService {
 
 	private CreditCardDao creditCardDao;
 	private ModelMapperService modelMapperService;
+	private UserService userService;
 
 	@Autowired
-	public CreditCardManager(CreditCardDao creditCardDao, ModelMapperService modelMapperService) {
+	public CreditCardManager(CreditCardDao creditCardDao, ModelMapperService modelMapperService, UserService userService) {
 		super();
 		this.creditCardDao = creditCardDao;
 		this.modelMapperService = modelMapperService;
+		this.userService = userService;
 	}
 
 	@Override
@@ -49,7 +54,8 @@ public class CreditCardManager implements CreditCardService {
 
 	@Override
 	public Result create(CreateCreditCardRequest createCreditCardRequest) {
-		Result result = BusinessRules.run(checkCreditCardFormat(createCreditCardRequest.getCardNumber()));
+		Result result = BusinessRules.run(checkCreditCardFormat(createCreditCardRequest.getCardNumber()), userService.existsById(createCreditCardRequest.getUserId()),
+				checkIfCvcIsNumeric(createCreditCardRequest.getCvc()));
 		if(result != null) {
 			return result;
 		}
@@ -60,7 +66,8 @@ public class CreditCardManager implements CreditCardService {
 
 	@Override
 	public Result update(UpdateCreditCardRequest updateCreditCardRequest) {
-		Result result = BusinessRules.run(checkCreditCardFormat(updateCreditCardRequest.getCardNumber()));
+		Result result = BusinessRules.run(checkCreditCardFormat(updateCreditCardRequest.getCardNumber()), userService.existsById(updateCreditCardRequest.getUserId()),
+				checkIfCardIdExists(updateCreditCardRequest.getCardId()));
 		if(result != null) {
 			return result;
 		}
@@ -71,6 +78,10 @@ public class CreditCardManager implements CreditCardService {
 
 	@Override
 	public Result delete(DeleteCreditCardRequest deleteCreditCardRequest) {
+		Result result = BusinessRules.run(checkIfCardIdExists(deleteCreditCardRequest.getCardId()));
+		if(result != null) {
+			return result;
+		}
 		CreditCard creditCard = modelMapperService.forRequest().map(deleteCreditCardRequest, CreditCard.class);
 		this.creditCardDao.delete(creditCard);
 		return new SuccessResult(CreditCardMessages.delete);
@@ -87,9 +98,25 @@ public class CreditCardManager implements CreditCardService {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(cardNumber);
 		if(!matcher.matches()) {
-			return new ErrorResult(CreditCardMessages.errorCheckCreditCardFormat);
+			return new ErrorResult(CreditCardMessages.invalidCardNumberFormat);
 		}
 		return new SuccessResult();
+	}
+
+	private Result checkIfCvcIsNumeric(String cvc){
+		if(StringUtils.isNumeric(cvc)){
+			return new SuccessResult();
+		}
+		else {
+			return new ErrorResult(CreditCardMessages.invalidCvcFormat);
+		}
+	}
+
+	private Result checkIfCardIdExists(int cardID){
+		if(creditCardDao.existsById(cardID)){
+			return new SuccessResult();
+		}
+		return new ErrorResult(CreditCardMessages.cardIdDoesNotExist);
 	}
 
 }

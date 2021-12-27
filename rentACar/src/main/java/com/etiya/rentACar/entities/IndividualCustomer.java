@@ -1,5 +1,6 @@
 package com.etiya.rentACar.entities;
 
+import java.sql.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -38,9 +39,9 @@ public class IndividualCustomer extends User {
 	
 	@Column(name="last_name")
 	private String lastName;
-	
+
 	@Column(name="birthday")
-	private String birthday;
+	private Date birthday;
 	
 	
 }

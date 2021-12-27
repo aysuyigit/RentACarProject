@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import com.etiya.rentACar.entities.CreditCard;
 
 @Repository
-public interface CreditCardDao extends JpaRepository<CreditCard	, Integer>{
-	
+
+public interface CreditCardDao extends JpaRepository<CreditCard, Integer> {
+
 }
-	

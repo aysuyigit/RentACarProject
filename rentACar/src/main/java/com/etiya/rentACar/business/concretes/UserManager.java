@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.constants.messages.UserMessages;
-import com.etiya.rentACar.business.request.CreateUserRequest;
 import com.etiya.rentACar.business.request.DeleteUserRequest;
 import com.etiya.rentACar.business.request.UpdateUserRequest;
 import com.etiya.rentACar.dataAccess.UserDao;
@@ -46,26 +45,10 @@ public class UserManager implements UserService {
 		return new SuccessDataResult<List<UserSearchListDto>>(response);
 	}
 
-
-
-	@Override
-	public Result delete(DeleteUserRequest deleteUserRequest) {
-		User user= modelMapperService.forRequest().map(deleteUserRequest, User.class);
-		this.userDao.delete(user);
-		return new SuccessResult(UserMessages.delete);
-	}
-
-	@Override
-	public Result update(UpdateUserRequest updateUserRequest) {
-		User user= modelMapperService.forRequest().map(updateUserRequest, User.class);
-		this.userDao.save(user);
-		return new SuccessResult(UserMessages.update);
-	}
-
 	@Override
 	public Result existsByEmail(String email) {
 		if (this.userDao.existsByeMail(email)) {
-			return new ErrorResult();
+			return new ErrorResult(UserMessages.emailDuplicate);
 		}
 		return new SuccessResult();
 	}
@@ -83,7 +66,12 @@ public class UserManager implements UserService {
 		return userDao.getById(userId);
 	}
 
-
-
+	@Override
+	public Result existsById(int id) {
+		if (this.userDao.existsById(id)){
+			return new SuccessResult();
+		}
+		return new ErrorResult(UserMessages.userDoesNotExist);
+	}
 
 }

@@ -1,41 +1,37 @@
 package com.etiya.rentACar.business.request;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import java.sql.Date;
 
+import javax.validation.constraints.*;
+
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateCreditCardRequest {
-	
-	@NotNull(message = "Boş Geçilemez!")
-	private int cardId;
-
-	
-	@NotNull
-	@Size(min=2,max=30)
-	private String cardName;
-	
-
-	@NotNull(message = "Boş Geçilemez!")
-	@Size(min=2,max=30)
-	private String cardNumber;
-
 	@NotNull
 	private String nameOnCard;
 
-	private String expiration;
-	
-	@NotNull(message = "Boş Geçilemez!")
-	@Size(min=3,max=3)
-	private String cvc;
-	
-	private int individualCustomerId;
+	@NotNull
+	@ApiModelProperty(example = "xxxxxxxxxxxxxxxx")
+	private String cardNumber;
 
+	@NotNull
+	@ApiModelProperty(example = "1970-01-01")
+	private Date expiration;
+
+	@NotNull
+	@Size(min = 3, max = 3)
+	@ApiModelProperty(example = "123")
+	private String cvc;
+
+	@NotNull
+	private int userId;
+
+	@NotNull
+	private int cardId;
 }

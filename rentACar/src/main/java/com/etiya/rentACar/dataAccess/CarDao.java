@@ -2,6 +2,7 @@ package com.etiya.rentACar.dataAccess;
 
 import java.util.List;
 
+import com.etiya.rentACar.entities.City;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -16,4 +17,5 @@ public interface CarDao extends JpaRepository<Car, Integer>{
 	List<Car> getByBrand_BrandId(int brandId);
 	List<Car> getByColor_ColorId(int colorId);
 	List<Car> getByCityName(String cityName);
+	List<Car> getByCity(City city);
 }

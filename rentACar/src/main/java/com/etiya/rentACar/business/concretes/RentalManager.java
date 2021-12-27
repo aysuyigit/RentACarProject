@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.etiya.rentACar.business.abstracts.*;
 
+import com.etiya.rentACar.business.constants.messages.ExternalServiceMessages;
 import com.etiya.rentACar.business.constants.messages.RentalMessages;
 import com.etiya.rentACar.business.request.CreateRentalRequest;
 import com.etiya.rentACar.business.request.DeleteRentalRequest;
@@ -70,16 +71,15 @@ public class RentalManager implements RentalService {
 		return new SuccessDataResult<List<RentalSearchListDto>>(response);
 	}
 
-
-
 	@Override
 	public Result save(CreateRentalRequest createRentalRequest) {
-		Result result = BusinessRules.run(checkCarIsReturned(createRentalRequest.getCarId()),
+		Result result = BusinessRules.run(carService.checkExistingCar(createRentalRequest.getCarId()),
+				checkCarIsReturned(createRentalRequest.getCarId()),
 				checkFindeksPointAcceptability(createRentalRequest.getCarId(),createRentalRequest.getUserId()),
 				maintenanceService.checkIfCarIsOnMaintenance(createRentalRequest.getCarId()),
-				checkIfPaymentSuccesful(creditCardService.getById(4)),
-				checkIfAdditionalServicesAreDeclaredInTrueFormat(createRentalRequest.getDemandedAdditionalServices())
-		        );
+				//checkIfPaymentSuccessful(creditCardService.getById(3)),
+				checkIfAdditionalServicesAreDeclaredInTrueFormat(createRentalRequest.getDemandedAdditionalServices()),
+				checkIfAdditionalServiceExists(createRentalRequest.getDemandedAdditionalServices()));
 
 		if(result != null) {
 			return result;
@@ -98,6 +98,11 @@ public class RentalManager implements RentalService {
 
 	@Override
 	public Result delete(DeleteRentalRequest deleteRentalRequest) {
+		Result result = BusinessRules.run(checkIfRentalIdExists(deleteRentalRequest.getRentalId()));
+
+		if(result != null) {
+			return result;
+		}
 		Rental rental = modelMapperService.forRequest().map(deleteRentalRequest, Rental.class);
 		this.rentalDao.delete(rental);
 		return new SuccessResult(RentalMessages.delete);
@@ -106,7 +111,8 @@ public class RentalManager implements RentalService {
 	@Override
 	public Result update(UpdateRentalRequest updateRentalRequest) {
 		Result result = BusinessRules.run(checkIfEndDateIsAfterStartDate(updateRentalRequest.getReturnDate(), updateRentalRequest.getRentDate()),
-				checkIfAdditionalServicesAreDeclaredInTrueFormat(updateRentalRequest.getDemandedAdditionalServices()));
+				checkIfAdditionalServicesAreDeclaredInTrueFormat(updateRentalRequest.getDemandedAdditionalServices()),
+				checkIfRentalIdExists(updateRentalRequest.getRentalId()));
 
 		if(result != null) {
 			return result;
@@ -117,7 +123,7 @@ public class RentalManager implements RentalService {
 		if (updateRentalRequest.getReturnDate() != null){
 			this.rentingBillService.save(updateRentalRequest);
 			this.rentalDao.save(rental);
-			return new SuccessResult(RentalMessages.updateAndBilling);
+			return new SuccessResult(RentalMessages.updateAndCreateBill);
 		}
 		this.rentalDao.save(rental);
 		return new SuccessResult(RentalMessages.update);
@@ -128,48 +134,47 @@ public class RentalManager implements RentalService {
 		if(result != null) {
 			for (Rental rentals : this.rentalDao.getByCar_CarId(carId)) {
 				if(rentals.getReturnDate() == null) {
-					return new ErrorResult(RentalMessages.checkCarIsReturned);
+					return new ErrorResult(RentalMessages.carIsOnRental);
 				}
 			}
 		}
 		return new SuccessResult();
 	}
 
-
 	private Result checkFindeksPointAcceptability(int carId, int userId) {
 		Car car = carService.getCarAsElementByCarId(carId);
 		int findeksCar = car.getFindeksPointCar();
 		int findeksUser = financialDataService.getFindeksScore(userId);
 		if(findeksCar>findeksUser) {
-			return new ErrorResult(RentalMessages.checkFindeksPointAcceptability);
+			return new ErrorResult(ExternalServiceMessages.findexPointIsNotEnough);
 		}
 		return new SuccessResult();
 	}
-
+	@Override
 	public Result checkIfEndDateIsAfterStartDate(Date endDate, Date startDate) {
 		if(endDate != null) {
 			if(endDate.before(startDate)) {
-				return new ErrorResult(RentalMessages.checkIfEndDateIsAfterStartDate);
+				return new ErrorResult(RentalMessages.dateAccordance);
 			}
 		}
 		return new SuccessResult();
 	}
 
 	private void updateCityNameIfReturnCityIsDifferent(CreateRentalRequest createRentalRequest){
-		if(!((createRentalRequest.getRentCity()).equals(createRentalRequest.getReturnCity()))){
+		if(((createRentalRequest.getRentCity()) != (createRentalRequest.getReturnCity()))){
 			this.carService.updateCarCity(createRentalRequest.getCarId(),createRentalRequest.getReturnCity());
 		}
 	}
 	private void updateCityNameIfReturnCityIsDifferent(UpdateRentalRequest updateRentalRequest){
-		if(!((updateRentalRequest.getRentCity()).equals(updateRentalRequest.getReturnCity()))){
+		if(((updateRentalRequest.getRentCity()) != (updateRentalRequest.getReturnCity()))){
 			this.carService.updateCarCity(updateRentalRequest.getCarId(),updateRentalRequest.getReturnCity());
 		}
 	}
-	private Result checkIfPaymentSuccesful(CreditCard creditCard){
+	private Result checkIfPaymentSuccessful(CreditCard creditCard){
 		//creditCard.setCardNumber("");
 		boolean result = paymentApprovementService.checkPaymentSuccess(creditCard);
 		if(result==false){
-			return new ErrorResult();
+			return new ErrorResult(ExternalServiceMessages.paymentUnsuccessful);
 		}
 		return new SuccessResult();
 	}
@@ -189,7 +194,7 @@ public class RentalManager implements RentalService {
 			if (isExisting){
 				servicesAsElements.add(additionalServiceService.getById(Integer.parseInt(service)));
 			} else{
-				throw new NoSuchElementException("Servis "+ service + " bulunamadı.");
+				throw new NoSuchElementException("Service "+ service + " is not found!");
 			}
 		}
 		return new SuccessDataResult<List<AdditionalService>>(servicesAsElements);
@@ -200,8 +205,30 @@ public class RentalManager implements RentalService {
 			return new SuccessResult();
 		}
 		if (!demandedAdditionalServices.matches(regex)){
-			return new ErrorResult(RentalMessages.checkIfAdditionalServicesAreDeclaredInTrueFormat);
+			return new ErrorResult(RentalMessages.additionalServiceDeclaration);
 		}
 		return new SuccessResult();
+	}
+	private Result checkIfAdditionalServiceExists(String additionalServices){
+		if (additionalServices == null){
+			return new SuccessResult();
+		}
+		if (additionalServices.equals("")){
+			return new SuccessResult();
+		}
+		String[] servicesArray = additionalServices.split(",");
+		for (String service: servicesArray){
+			boolean isExisting = additionalServiceService.isExisting(Integer.parseInt(service));
+			if (!isExisting){
+				return new ErrorResult("Service " + service + " does not exists!");
+			}
+		}
+		return new SuccessResult();
+	}
+	private Result checkIfRentalIdExists(int rentalId) {
+		if (this.rentalDao.existsById(rentalId)){
+			return new SuccessResult();
+		}
+		return new ErrorResult(RentalMessages.rentalIdDoesNotExist);
 	}
 }

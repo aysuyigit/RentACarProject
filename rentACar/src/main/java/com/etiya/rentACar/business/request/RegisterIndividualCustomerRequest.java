@@ -1,8 +1,8 @@
 package com.etiya.rentACar.business.request;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -14,26 +14,30 @@ import java.sql.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateIndividualCustomerRequest {
-	@NotNull
-	private int userId;
-
-	@NotNull
-	@Size(min=2,max=16)
-	private String firstName;
-
-	@NotNull
-	@Size(min=2,max=16)
-	private String lastName;
-
+public class RegisterIndividualCustomerRequest {
+	@NotBlank
 	@NotNull
 	@Email
 	private String email;
 
+	@NotBlank
 	@NotNull
 	private String password;
+
+	@NotBlank
+	@NotNull
+	private String passwordConfirm;
+
+	@NotBlank
+	@NotNull
+	private String firstName;
+
+	@NotBlank
+	@NotNull
+	private String lastName;
 
 	@NotNull
 	@ApiModelProperty(example = "1970-01-01")
 	private Date birthday;
+
 }

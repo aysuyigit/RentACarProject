@@ -42,4 +42,8 @@ public class UpdateCarRequest {
 	@Max(1900)
 	@NotNull
 	private int findexPoint;
+
+	@NotNull
+	@Min(1)
+	private int cityId;
 }
