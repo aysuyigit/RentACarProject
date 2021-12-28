@@ -10,9 +10,11 @@ import java.util.stream.Collectors;
 import com.etiya.rentACar.business.abstracts.CarService;
 
 import com.etiya.rentACar.business.constants.messages.CarImageMessages;
+import com.etiya.rentACar.business.constants.messages.CarMessages;
 import com.etiya.rentACar.business.request.CreateCarImageRequest;
 import com.etiya.rentACar.business.request.DeleteCarImageRequest;
 import com.etiya.rentACar.business.request.UpdateCarImageRequest;
+import com.etiya.rentACar.core.utilities.results.*;
 import com.etiya.rentACar.dataAccess.CarImageDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,6 @@ import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.helpers.FileHelper;
 import com.etiya.rentACar.core.utilities.helpers.FileHelperManager;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
-import com.etiya.rentACar.core.utilities.results.DataResult;
-import com.etiya.rentACar.core.utilities.results.ErrorResult;
-import com.etiya.rentACar.core.utilities.results.Result;
-import com.etiya.rentACar.core.utilities.results.SuccessDataResult;
-import com.etiya.rentACar.core.utilities.results.SuccessResult;
 
 import com.etiya.rentACar.entities.CarImage;
 
@@ -103,11 +100,16 @@ public class CarImageManager implements CarImageService {
 	}
 
 	public DataResult<List<CarImageSearchListDto>> getCarImageByCarId(int carId) {
-		Result resultCheck = BusinessRules.run(checkIfThereIsNoPicture(carId));
+		Result result1 = BusinessRules.run(carService.checkExistingCar(carId));
+		if(result1 != null) {
+			return new ErrorDataResult<List<CarImageSearchListDto>>(null, CarMessages.carNotFound);
+		}
+		Result resultCheck = BusinessRules.run(checkIfThereIsNoPicture(carId),carService.checkExistingCar(carId));
+
 		if (resultCheck != null) {
 			List<CarImage> carImages = new ArrayList<CarImage>();
 			CarImage carImage1 = new CarImage();
-			carImage1.setImagePath("C:\\Users\\aysu.yigit\\OneDrive - ETİYA\\Masaüstü\\cartoon-car-png-3\\");
+			carImage1.setImagePath("C:\\Users\\aysu.yigit\\OneDrive - ETİYA\\Masaüstü\\cartoon-car-png-3");
 			carImage1.setCar(carService.getCarAsElementByCarId(carId));
 			carImages.add(carImage1);
 			List<CarImageSearchListDto> list1 = carImages.stream()
@@ -136,16 +138,16 @@ public class CarImageManager implements CarImageService {
 
 	private Result checkIfThereIsNoPicture(int carId) {
 		File file = new File("C:\\Users\\aysu.yigit\\OneDrive - ETİYA\\Masaüstü\\img\\car" + carId);
-		if (file.exists() && file.listFiles().length==0 || !file.exists()) {
-			if (file.listFiles().length == 0) {
-				return new ErrorResult();
-			}
+		if ((file.exists() && file.listFiles().length==0) || !file.exists()) {
+		   return new ErrorResult();
+
 		}
 		return new SuccessResult();
 	}
 
 	@Override
 	public List<CarImage> getCarImageListByCarId(int carId) {
+
 
 		return this.carImageDao.getByCar_CarId(carId);
 
@@ -157,6 +159,7 @@ public class CarImageManager implements CarImageService {
 		}
 		return new SuccessResult();
 	}
+
 
 
 }

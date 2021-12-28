@@ -48,20 +48,26 @@ public class AdditionalServiceManager implements AdditionalServiceService {
         AdditionalService additionalService = modelMapperService.forRequest().
                 map(createAdditionalServiceRequest, AdditionalService.class);
         this.additionalServiceDao.save(additionalService);
-        return new SuccessResult(AdditionalServiceMessages.Add);
+        return new SuccessResult(AdditionalServiceMessages.add);
     }
 
     @Override
     public Result delete(DeleteAdditionalServiceRequest deleteAdditionalServiceRequest) {
+        Result result =BusinessRules.run(checkExistingServiceId(deleteAdditionalServiceRequest.getServiceId()));
+        if( result != null){
+            return result;
+        }
         AdditionalService additionalService = modelMapperService.forRequest().
                 map(deleteAdditionalServiceRequest, AdditionalService.class);
         this.additionalServiceDao.delete(additionalService);
-        return new SuccessResult(AdditionalServiceMessages.Delete);
+        return new SuccessResult(AdditionalServiceMessages.delete);
     }
 
     @Override
     public Result update(UpdateAdditionalServiceRequest updateAdditionalServiceRequest) {
-        Result result = BusinessRules.run(checkExistingServiceName(updateAdditionalServiceRequest.getServiceName()));
+        Result result = BusinessRules.run(checkExistingServiceName(updateAdditionalServiceRequest.getServiceName(),
+                        updateAdditionalServiceRequest.getServiceId()),
+                checkExistingServiceId(updateAdditionalServiceRequest.getServiceId()));
         if(result!=null){
             return result;
         }
@@ -90,5 +96,26 @@ public class AdditionalServiceManager implements AdditionalServiceService {
             }
         }
         return new SuccessResult();
+    }
+
+    private Result checkExistingServiceName(String serviceName,int serviceId){
+        String lowerCaseServiceName = serviceName.toLowerCase();
+        for (AdditionalService service: additionalServiceDao.findAll()) {
+            if(additionalServiceDao.getByServiceId(serviceId) == service){
+                continue;
+            }
+            String lowerCaseService = service.getServiceName().toLowerCase();
+            if(lowerCaseService.equals(lowerCaseServiceName)) {
+                return new ErrorResult(AdditionalServiceMessages.CheckExistingServiceName);
+            }
+        }
+        return new SuccessResult();
+    }
+
+    private Result checkExistingServiceId(int serviceId){
+        if(additionalServiceDao.existsByServiceId(serviceId)){
+            return new SuccessResult();
+        }
+        return new ErrorResult(AdditionalServiceMessages.ServiceIdDoesNotExists);
     }
 }

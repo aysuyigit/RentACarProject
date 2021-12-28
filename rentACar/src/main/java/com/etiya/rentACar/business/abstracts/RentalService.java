@@ -10,6 +10,7 @@ import com.etiya.rentACar.business.request.UpdateRentalRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
 import com.etiya.rentACar.entities.AdditionalService;
+import com.etiya.rentACar.entities.Rental;
 
 public interface RentalService {
 	DataResult<List<RentalSearchListDto>> getAll();
@@ -19,4 +20,5 @@ public interface RentalService {
 	Result checkCarIsReturned(int carId);
 	public DataResult<List<AdditionalService>> extractAdditionalServicesFromString(UpdateRentalRequest updateRentalRequest);
 	Result checkIfEndDateIsAfterStartDate(Date endDate, Date startDate);
+	Rental getById(int rentalId);
 }

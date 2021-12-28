@@ -57,6 +57,10 @@ public class BrandManager implements BrandService{
 
 	@Override
 	public Result delete(DeleteBrandRequest deleteBrandRequest) {
+		Result result = BusinessRules.run(checkExistingBrand(deleteBrandRequest.getBrandId()));
+		if( result != null){
+			return result;
+		}
 		Brand brand = modelMapperService.forRequest().map(deleteBrandRequest, Brand.class);
 		this.brandDao.delete(brand);	
 		return new SuccessResult(BrandMessages.Delete);
@@ -64,6 +68,12 @@ public class BrandManager implements BrandService{
 
 	@Override
 	public Result update(UpdateBrandRequest updateBrandRequest) {
+		Result result = BusinessRules.run(checkExistingBrand(updateBrandRequest.getBrandName()),
+				checkExistingBrand(updateBrandRequest.getBrandId()));
+
+		if(result != null) {
+			return result;
+		}
 		Brand brand = modelMapperService.forRequest().map(updateBrandRequest, Brand.class);
 		this.brandDao.save(brand);
 		return new SuccessResult(BrandMessages.Update);
@@ -79,5 +89,14 @@ public class BrandManager implements BrandService{
 		}
 		return new SuccessResult();
 	}
+
+	private Result checkExistingBrand(int brandId){
+		boolean isExisting = brandDao.existsById(brandId);
+		if (!isExisting){
+			return new ErrorResult(BrandMessages.brandIdNotFound);
+		}
+		return new SuccessResult();
+	}
+
 
 }

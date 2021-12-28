@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.etiya.rentACar.business.abstracts.*;
 import com.etiya.rentACar.business.constants.messages.CarDamageMessages;
 import com.etiya.rentACar.business.constants.messages.CarMessages;
+import com.etiya.rentACar.business.constants.messages.CorporateCustomerMessages;
 import com.etiya.rentACar.business.dtos.CarDamageSearchListDto;
 import com.etiya.rentACar.business.request.CreateCarRequest;
 import com.etiya.rentACar.business.request.DeleteCarRequest;
@@ -14,6 +15,7 @@ import com.etiya.rentACar.business.request.UpdateCarRequest;
 import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.results.*;
 import com.etiya.rentACar.dataAccess.CarDao;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,10 @@ public class CarManager implements CarService {
 
 	@Override
 	public Result save(CreateCarRequest createCarRequest) {
+		Result result = BusinessRules.run(checkIfModelYearIsNumeric(createCarRequest.getModelYear()));
+		if( result != null ){
+			return result;
+		}
 		Car car = modelMapperService.forRequest().map(createCarRequest, Car.class);
 		this.carDao.save(car);
 		return new SuccessResult(CarMessages.add);
@@ -69,6 +75,10 @@ public class CarManager implements CarService {
 
 	@Override
 	public Result delete(DeleteCarRequest deleteCarRequest) {
+		Result result = BusinessRules.run(checkExistingCar(deleteCarRequest.getCarId()));
+		if(result != null){
+			return result;
+		}
 		Car car = modelMapperService.forRequest().map(deleteCarRequest, Car.class);
 		this.carDao.delete(car);
 		return new SuccessResult(CarMessages.delete);
@@ -76,7 +86,8 @@ public class CarManager implements CarService {
 
 	@Override
 	public Result update(UpdateCarRequest updateCarRequest) {
-		Result result = BusinessRules.run(checkExistingCar(updateCarRequest.getCarId()));
+		Result result = BusinessRules.run(checkExistingCar(updateCarRequest.getCarId()),
+				checkIfModelYearIsNumeric(updateCarRequest.getModelYear()));
 		if (result != null) {
 			return result;
 		}
@@ -96,6 +107,9 @@ public class CarManager implements CarService {
 	@Override
 	public DataResult<List<CarSearchListDto>> getByBrandId(int brandId) {
 		List<Car> cars = this.carDao.getByBrand_BrandId(brandId);
+		if(cars.isEmpty()){
+			return new ErrorDataResult<List<CarSearchListDto>>(null,CarMessages.listIsEmpty);
+		}
 		List<CarSearchListDto> response = cars.stream().map(car -> modelMapperService.forDto()
 				.map(car, CarSearchListDto.class)).collect(Collectors.toList());
 		List<CarSearchListDto> finalResponse = deleteCarsOnMaintenanceFromCarSearchListDtoList(response);
@@ -105,6 +119,10 @@ public class CarManager implements CarService {
 	@Override
 	public DataResult<List<CarSearchListDto>> getByColorId(int colorId) {
 		List<Car> cars = this.carDao.getByColor_ColorId(colorId);
+		if(cars.isEmpty()){
+			return new ErrorDataResult<List<CarSearchListDto>>(null,CarMessages.listIsEmpty);
+		}
+
 		List<CarSearchListDto> response = cars.stream().map(car -> modelMapperService.forDto()
 				.map(car, CarSearchListDto.class)).collect(Collectors.toList());
 		List<CarSearchListDto> finalResponse = deleteCarsOnMaintenanceFromCarSearchListDtoList(response);
@@ -114,6 +132,9 @@ public class CarManager implements CarService {
 	@Override
 	public DataResult<List<CarSearchListDto>> getByCity(int cityId) {
 		List<Car> list = carDao.getByCity(cityService.getByCityId(cityId));
+		if(list.isEmpty()){
+			return new ErrorDataResult<List<CarSearchListDto>>(null,CarMessages.listIsEmpty);
+		}
 		List<CarSearchListDto> result = list.stream().map(car -> modelMapperService.forDto().
 				map(car, CarSearchListDto.class)).collect(Collectors.toList());
 		List<CarSearchListDto> response = deleteCarsOnMaintenanceFromCarSearchListDtoList(result);
@@ -220,4 +241,17 @@ public class CarManager implements CarService {
 		}
 		return list;
 	}
+
+	public Result checkIfModelYearIsNumeric(String modelYear){
+		if(StringUtils.isNumeric(modelYear)){
+			return new SuccessResult();
+		}
+		else {
+			return new ErrorResult(CarMessages.invalidModelYearFormat);
+		}
+	}
+
+
+
+
 }

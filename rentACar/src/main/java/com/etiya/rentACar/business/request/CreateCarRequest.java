@@ -26,7 +26,7 @@ public class CreateCarRequest {
 
 	@NotNull
 	@Min(0)
-	private double dailyPrice;
+	private Double dailyPrice;
 
 	@NotNull
 	@Size(max=50)
@@ -36,17 +36,16 @@ public class CreateCarRequest {
 	@NotNull
 	@Min(0)
 	@Max(1900)
-	private int findeksPointCar;
+	private Integer findeksPointCar;
+
 
 	@NotNull
-	@NotBlank
-	private String cityName;
-
-	@NotNull
-	private int kilometer;
+	@Min(0)
+	private Integer kilometer;
 
 	@NotNull
 	@Min(1)
+	@Max(81)
 	private int cityId;
 
 }

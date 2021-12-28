@@ -53,8 +53,7 @@ public class Car {
 	@OneToMany(mappedBy="car")
 	private List<Maintenance> maintenances;
 
-	@Column(name="city")
-	private String cityName;
+
 
 	@Column(name="kilometer")
 	private int kilometer;

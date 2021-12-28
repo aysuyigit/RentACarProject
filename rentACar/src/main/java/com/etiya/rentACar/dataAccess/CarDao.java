@@ -11,11 +11,10 @@ import com.etiya.rentACar.entities.complexTypes.CarDetail;
 
 public interface CarDao extends JpaRepository<Car, Integer>{
 	@Query("Select new com.etiya.rentACar.entities.complexTypes.CarDetail "
-            + " (c.carId,b.brandName,cl.colorName,c.dailyPrice,c.modelYear,c.description) "
-            + "From Car c Inner join c.color cl inner join c.brand b")
+			+ " (c.carId,b.brandName,cl.colorName,c.dailyPrice,c.modelYear,c.description,ci.cityName, c.findeksPointCar, c.kilometer) "
+			+ "From Car c Inner join c.color cl inner join c.brand b inner join c.city ci")
 	List<CarDetail> getCarWithColorAndBrandDetails();
 	List<Car> getByBrand_BrandId(int brandId);
 	List<Car> getByColor_ColorId(int colorId);
-	List<Car> getByCityName(String cityName);
 	List<Car> getByCity(City city);
 }

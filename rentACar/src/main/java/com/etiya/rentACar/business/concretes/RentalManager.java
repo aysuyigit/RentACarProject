@@ -17,19 +17,16 @@ import com.etiya.rentACar.core.adapters.findeksServiceAdapter.FinancialDataServi
 import com.etiya.rentACar.core.adapters.posServiceAdapter.PaymentApprovementService;
 import com.etiya.rentACar.core.utilities.results.*;
 import com.etiya.rentACar.dataAccess.RentalDao;
-import com.etiya.rentACar.entities.AdditionalService;
-import com.etiya.rentACar.entities.CreditCard;
+import com.etiya.rentACar.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 
 import com.etiya.rentACar.business.dtos.RentalSearchListDto;
 
 import com.etiya.rentACar.core.utilities.business.BusinessRules;
 import com.etiya.rentACar.core.utilities.mapping.ModelMapperService;
-
-import com.etiya.rentACar.entities.Car;
-import com.etiya.rentACar.entities.Rental;
 
 @Service
 public class RentalManager implements RentalService {
@@ -44,10 +41,11 @@ public class RentalManager implements RentalService {
 	private CreditCardService creditCardService;
 	private AdditionalServiceService additionalServiceService;
 
+
 	@Autowired
 	public RentalManager(RentalDao rentalDao, ModelMapperService modelMapperService,
 						 CarService carService, FinancialDataService financialDataService,
-						 @Lazy MaintenanceService maintenanceService,RentingBillService rentingBillService,
+						 @Lazy MaintenanceService maintenanceService, RentingBillService rentingBillService,
 						 PaymentApprovementService paymentApprovementService,
 						 CreditCardService creditCardService,
 						 AdditionalServiceService additionalServiceService) {
@@ -75,13 +73,13 @@ public class RentalManager implements RentalService {
 	public Result save(CreateRentalRequest createRentalRequest) {
 		Result result = BusinessRules.run(carService.checkExistingCar(createRentalRequest.getCarId()),
 				checkCarIsReturned(createRentalRequest.getCarId()),
-				checkFindeksPointAcceptability(createRentalRequest.getCarId(),createRentalRequest.getUserId()),
+				checkFindeksPointAcceptability(createRentalRequest.getCarId(), createRentalRequest.getUserId()),
 				maintenanceService.checkIfCarIsOnMaintenance(createRentalRequest.getCarId()),
 				//checkIfPaymentSuccessful(creditCardService.getById(3)),
 				checkIfAdditionalServicesAreDeclaredInTrueFormat(createRentalRequest.getDemandedAdditionalServices()),
 				checkIfAdditionalServiceExists(createRentalRequest.getDemandedAdditionalServices()));
 
-		if(result != null) {
+		if (result != null) {
 			return result;
 		}
 		updateCityNameIfReturnCityIsDifferent(createRentalRequest);
@@ -100,7 +98,7 @@ public class RentalManager implements RentalService {
 	public Result delete(DeleteRentalRequest deleteRentalRequest) {
 		Result result = BusinessRules.run(checkIfRentalIdExists(deleteRentalRequest.getRentalId()));
 
-		if(result != null) {
+		if (result != null) {
 			return result;
 		}
 		Rental rental = modelMapperService.forRequest().map(deleteRentalRequest, Rental.class);
@@ -112,17 +110,20 @@ public class RentalManager implements RentalService {
 	public Result update(UpdateRentalRequest updateRentalRequest) {
 		Result result = BusinessRules.run(checkIfEndDateIsAfterStartDate(updateRentalRequest.getReturnDate(), updateRentalRequest.getRentDate()),
 				checkIfAdditionalServicesAreDeclaredInTrueFormat(updateRentalRequest.getDemandedAdditionalServices()),
-				checkIfRentalIdExists(updateRentalRequest.getRentalId()));
+				checkIfRentalIdExists(updateRentalRequest.getRentalId()),
+				checkIfBillsAlreadyCreated(updateRentalRequest.getRentalId()),
+				checkIfReturnKilometerIsBiggerThanRentKilometer(updateRentalRequest.getReturnKilometer(),
+						updateRentalRequest.getCarId()));
 
-		if(result != null) {
+		if (result != null) {
 			return result;
 		}
 		updateCityNameIfReturnCityIsDifferent(updateRentalRequest);
-		this.carService.updateCarKilometer(updateRentalRequest.getCarId(),updateRentalRequest.getReturnKilometer());
+		this.carService.updateCarKilometer(updateRentalRequest.getCarId(), updateRentalRequest.getReturnKilometer());
 		Rental rental = modelMapperService.forRequest().map(updateRentalRequest, Rental.class);
-		if (updateRentalRequest.getReturnDate() != null){
+
+		if (updateRentalRequest.getReturnDate() != null) {
 			this.rentingBillService.save(updateRentalRequest);
-			this.rentalDao.save(rental);
 			return new SuccessResult(RentalMessages.updateAndCreateBill);
 		}
 		this.rentalDao.save(rental);
@@ -131,9 +132,9 @@ public class RentalManager implements RentalService {
 
 	public Result checkCarIsReturned(int carId) {
 		List<Rental> result = this.rentalDao.getByCar_CarId(carId);
-		if(result != null) {
+		if (result != null) {
 			for (Rental rentals : this.rentalDao.getByCar_CarId(carId)) {
-				if(rentals.getReturnDate() == null) {
+				if (rentals.getReturnDate() == null) {
 					return new ErrorResult(RentalMessages.carIsOnRental);
 				}
 			}
@@ -145,35 +146,43 @@ public class RentalManager implements RentalService {
 		Car car = carService.getCarAsElementByCarId(carId);
 		int findeksCar = car.getFindeksPointCar();
 		int findeksUser = financialDataService.getFindeksScore(userId);
-		if(findeksCar>findeksUser) {
+		if (findeksCar > findeksUser) {
 			return new ErrorResult(ExternalServiceMessages.findexPointIsNotEnough);
 		}
 		return new SuccessResult();
 	}
+
 	@Override
 	public Result checkIfEndDateIsAfterStartDate(Date endDate, Date startDate) {
-		if(endDate != null) {
-			if(endDate.before(startDate)) {
+		if (endDate != null) {
+			if (endDate.before(startDate)) {
 				return new ErrorResult(RentalMessages.dateAccordance);
 			}
 		}
 		return new SuccessResult();
 	}
 
-	private void updateCityNameIfReturnCityIsDifferent(CreateRentalRequest createRentalRequest){
-		if(((createRentalRequest.getRentCity()) != (createRentalRequest.getReturnCity()))){
-			this.carService.updateCarCity(createRentalRequest.getCarId(),createRentalRequest.getReturnCity());
+	@Override
+	public Rental getById(int rentalId) {
+		return rentalDao.getById(rentalId);
+	}
+
+	private void updateCityNameIfReturnCityIsDifferent(CreateRentalRequest createRentalRequest) {
+		if (((createRentalRequest.getRentCity()) != (createRentalRequest.getReturnCity()))) {
+			this.carService.updateCarCity(createRentalRequest.getCarId(), createRentalRequest.getReturnCity());
 		}
 	}
-	private void updateCityNameIfReturnCityIsDifferent(UpdateRentalRequest updateRentalRequest){
-		if(((updateRentalRequest.getRentCity()) != (updateRentalRequest.getReturnCity()))){
-			this.carService.updateCarCity(updateRentalRequest.getCarId(),updateRentalRequest.getReturnCity());
+
+	private void updateCityNameIfReturnCityIsDifferent(UpdateRentalRequest updateRentalRequest) {
+		if (((updateRentalRequest.getRentCity()) != (updateRentalRequest.getReturnCity()))) {
+			this.carService.updateCarCity(updateRentalRequest.getCarId(), updateRentalRequest.getReturnCity());
 		}
 	}
-	private Result checkIfPaymentSuccessful(CreditCard creditCard){
+
+	private Result checkIfPaymentSuccessful(CreditCard creditCard) {
 		//creditCard.setCardNumber("");
 		boolean result = paymentApprovementService.checkPaymentSuccess(creditCard);
-		if(result==false){
+		if (result == false) {
 			return new ErrorResult(ExternalServiceMessages.paymentUnsuccessful);
 		}
 		return new SuccessResult();
@@ -181,54 +190,74 @@ public class RentalManager implements RentalService {
 
 	public DataResult<List<AdditionalService>> extractAdditionalServicesFromString(UpdateRentalRequest updateRentalRequest) throws NoSuchElementException {
 		String services = updateRentalRequest.getDemandedAdditionalServices();
-		if(services == null){
+		if (services == null) {
 			return null;
 		}
-		if(services.equals("")){
+		if (services.equals("")) {
 			return null;
 		}
 		String[] servicesArray = services.split(",");
 		List<AdditionalService> servicesAsElements = new ArrayList<AdditionalService>();
-		for (String service: servicesArray) {
+		for (String service : servicesArray) {
 			boolean isExisting = additionalServiceService.isExisting(Integer.parseInt(service));
-			if (isExisting){
+			if (isExisting) {
 				servicesAsElements.add(additionalServiceService.getById(Integer.parseInt(service)));
-			} else{
-				throw new NoSuchElementException("Service "+ service + " is not found!");
+			} else {
+				throw new NoSuchElementException("Service " + service + " is not found!");
 			}
 		}
 		return new SuccessDataResult<List<AdditionalService>>(servicesAsElements);
 	}
-	private Result checkIfAdditionalServicesAreDeclaredInTrueFormat(String demandedAdditionalServices){
+
+	private Result checkIfAdditionalServicesAreDeclaredInTrueFormat(String demandedAdditionalServices) {
 		String regex = "^[1-9]+(,[1-9]+)*$";
-		if (demandedAdditionalServices == null || demandedAdditionalServices == ""){
+		if (demandedAdditionalServices == null || demandedAdditionalServices == "") {
 			return new SuccessResult();
 		}
-		if (!demandedAdditionalServices.matches(regex)){
+		if (!demandedAdditionalServices.matches(regex)) {
 			return new ErrorResult(RentalMessages.additionalServiceDeclaration);
 		}
 		return new SuccessResult();
 	}
-	private Result checkIfAdditionalServiceExists(String additionalServices){
-		if (additionalServices == null){
+
+	private Result checkIfAdditionalServiceExists(String additionalServices) {
+		if (additionalServices == null) {
 			return new SuccessResult();
 		}
-		if (additionalServices.equals("")){
+		if (additionalServices.equals("")) {
 			return new SuccessResult();
 		}
 		String[] servicesArray = additionalServices.split(",");
-		for (String service: servicesArray){
+		for (String service : servicesArray) {
 			boolean isExisting = additionalServiceService.isExisting(Integer.parseInt(service));
-			if (!isExisting){
+			if (!isExisting) {
 				return new ErrorResult("Service " + service + " does not exists!");
 			}
 		}
 		return new SuccessResult();
 	}
+
 	private Result checkIfRentalIdExists(int rentalId) {
-		if (this.rentalDao.existsById(rentalId)){
+		if (this.rentalDao.existsById(rentalId)) {
 			return new SuccessResult();
 		}
 		return new ErrorResult(RentalMessages.rentalIdDoesNotExist);
+	}
+
+	private Result checkIfBillsAlreadyCreated(int rentalId) {
+		List<RentingBill> bills = rentingBillService.rentingBills();
+		for (RentingBill bill : bills) {
+			if (bill.getRental().getRentalId() == rentalId) {
+				return new ErrorResult(RentalMessages.billsAlreadyCreated);
+			}
+		}
+		return new SuccessResult();
+	}
+
+	private Result checkIfReturnKilometerIsBiggerThanRentKilometer(int returnKilometer, int carId) {
+		if (returnKilometer <= carService.getCarAsElementByCarId(carId).getKilometer()) {
+			return new ErrorResult(RentalMessages.returnKilometerIsBiggerThanRentKilometer);
+		}
+		return new SuccessResult();
 	}
 }

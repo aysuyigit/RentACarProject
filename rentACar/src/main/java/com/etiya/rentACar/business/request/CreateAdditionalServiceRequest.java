@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -15,7 +16,8 @@ public class CreateAdditionalServiceRequest {
     private String serviceName;
 
     @NotNull
-    private int serviceDailyPrice;
+    @Min(0)
+    private Integer serviceDailyPrice;
 
 
 }

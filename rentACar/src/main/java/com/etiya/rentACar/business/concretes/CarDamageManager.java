@@ -56,6 +56,10 @@ public class CarDamageManager implements CarDamageService {
 
     @Override
     public Result delete(DeleteCarDamageRequest deleteCarDamageRequest) {
+        Result result = BusinessRules.run((checkIfDamagaIdExists(deleteCarDamageRequest.getCarDamageId())));
+        if(result != null){
+            return result;
+        }
         CarDamage carDamage = modelMapperService.forRequest().map(deleteCarDamageRequest, CarDamage.class);
         this.carDamageDao.delete(carDamage);
         return new SuccessResult(CarDamageMessages.delete);
@@ -63,6 +67,12 @@ public class CarDamageManager implements CarDamageService {
 
     @Override
     public Result update(UpdateCarDamageRequest updateCarDamageRequest) {
+
+        Result result = BusinessRules.run((checkIfDamagaIdExists(updateCarDamageRequest.getCarDamageId())),
+                carService.checkExistingCar(updateCarDamageRequest.getCarId()));
+        if(result != null){
+            return result;
+        }
         CarDamage carDamage = modelMapperService.forRequest().map(updateCarDamageRequest, CarDamage.class);
         this.carDamageDao.save(carDamage);
         return new SuccessResult(CarDamageMessages.update);
@@ -70,6 +80,11 @@ public class CarDamageManager implements CarDamageService {
 
     @Override
     public DataResult<List<CarDamageSearchListDto>> getDamagesByCarId(int carId) {
+        Result result= BusinessRules.run(carService.checkExistingCar(carId));
+        if(result != null){
+            return new ErrorDataResult<List<CarDamageSearchListDto>>(null , CarMessages.carNotFound);
+        }
+
         List<CarDamage> list = carDamageDao.getByCar_CarId(carId);
         List<CarDamageSearchListDto> response = list.stream().map(carDamage -> modelMapperService.forDto().
                 map(carDamage, CarDamageSearchListDto.class)).collect(Collectors.toList());
@@ -82,5 +97,12 @@ public class CarDamageManager implements CarDamageService {
             return new ErrorResult(CarMessages.carNotFound);
         }
         return new SuccessResult();
+    }
+
+    private Result checkIfDamagaIdExists(int damageId){
+        if(carDamageDao.existsById(damageId) ){
+            return new SuccessResult();
+        }
+        return new ErrorResult(CarDamageMessages.carDamageNotFoundId);
     }
 }

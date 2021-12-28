@@ -20,7 +20,14 @@ public class CarDetail {
 	private String modelYear;
 	
 	private String description;
+
+	private String cityName;
+
+	private int findeksPointCar;
+
+	private int kilometer;
+
 	
-//	private List<String> imagePaths;
+
 	
 }

@@ -70,6 +70,7 @@ public class RentingBillManager implements RentingBillService {
         rentingBill.setRentingPrice(calculateRentingPrice(updateRentalRequest.getRentCity(),
                 updateRentalRequest.getReturnCity(),
                 dailyPriceOfCar,totalRentDay,updateRentalRequest));
+        rentingBill.setRental(rentalService.getById(updateRentalRequest.getRentalId()));
         rentingBillDao.save(rentingBill);
         return new SuccessResult(RentingBillMessages.add);
     }
@@ -115,6 +116,11 @@ public class RentingBillManager implements RentingBillService {
         List<RentingBillSearchListDto> response = list.stream().map(rentingBill -> modelMapperService.forDto().
                 map(rentingBill, RentingBillSearchListDto.class)).collect(Collectors.toList());
         return new SuccessDataResult<List<RentingBillSearchListDto>>(response);
+    }
+
+    @Override
+    public List<RentingBill> rentingBills() {
+        return rentingBillDao.findAll();
     }
 
     private int calculateRentingPrice(int rentCity, int returnCity, int dailyPriceOfCar,

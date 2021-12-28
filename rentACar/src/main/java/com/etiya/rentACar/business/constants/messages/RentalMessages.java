@@ -9,4 +9,7 @@ public class RentalMessages {
     public static final String additionalServiceDeclaration = "Additional services are declared in a wrong way! Please write the ids of the services while separating them with commas. If you don't want any additional service, leave it empty.";
     public static final String dateAccordance = "The end date cannot be earlier than the start date!";
     public static final String rentalIdDoesNotExist = "Rental ID does not exist!";
+    public static final String billsAlreadyCreated = " billsAlreadyCreated";
+    public static final String returnKilometerIsBiggerThanRentKilometer = "ReturnKilometerIsBiggerThanRentKilometer";
+
 }

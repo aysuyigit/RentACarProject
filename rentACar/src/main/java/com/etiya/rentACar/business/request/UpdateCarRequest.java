@@ -1,9 +1,6 @@
 package com.etiya.rentACar.business.request;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,7 +29,7 @@ public class UpdateCarRequest {
 	
 	@NotNull
 	@Min(0)
-	private double dailyPrice;
+	private Double dailyPrice;
 	
 	@NotNull
 	@Size(max=50)
@@ -41,9 +38,14 @@ public class UpdateCarRequest {
 	@Min(0)
 	@Max(1900)
 	@NotNull
-	private int findexPoint;
+	private Integer findexPoint;
+
+	@NotNull
+	@Min(0)
+	private Integer kilometer;
 
 	@NotNull
 	@Min(1)
+	@Max(81)
 	private int cityId;
 }

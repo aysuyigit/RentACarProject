@@ -11,6 +11,7 @@ import com.etiya.rentACar.business.request.DeleteRentingBillRequest;
 import com.etiya.rentACar.business.request.UpdateRentingBillRequest;
 import com.etiya.rentACar.core.utilities.results.DataResult;
 import com.etiya.rentACar.core.utilities.results.Result;
+import com.etiya.rentACar.entities.RentingBill;
 
 public interface RentingBillService {
     DataResult<List<RentingBillSearchListDto>> getAll();
@@ -19,4 +20,5 @@ public interface RentingBillService {
     Result update(UpdateRentingBillRequest updateRentingBillRequest);
     DataResult<List<RentingBillSearchListDto>> getRentingBillByUserId(int userId);
     DataResult<List<RentingBillSearchListDto>> getRentingBillByDateInterval(Date startDate, Date endDate);
+    List<RentingBill> rentingBills();
 }
